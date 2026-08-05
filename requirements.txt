@@ -1,0 +1,33 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# StyleHub E-Commerce — Python Requirements
+# ──────────────────────────────────────────────────────────────────────────────
+
+# Core Django
+Django>=5.2,<6.0
+psycopg2-binary           # PostgreSQL driver
+
+# Jinja2 templating
+django-jinja
+
+# Environment / config
+python-decouple
+
+# Image handling
+Pillow
+
+# Authentication (email + Google OAuth)
+django-allauth[socialaccount]
+
+# REST API
+djangorestframework
+django-filter
+
+# Cloudinary (image hosting)
+cloudinary
+django-cloudinary-storage
+
+# Static files (production)
+whitenoise
+
+# Dev tools
+django-debug-toolbar

@@ -1,0 +1,122 @@
+/* Newsletter & Dark Footer */
+.newsletter-section {
+    padding: 70px 80px;
+    background: var(--color-white);
+    border-top: 1px solid var(--color-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.newsletter-title {
+    font-size: 26px;
+    font-weight: 800;
+    text-transform: uppercase;
+    line-height: 1.2;
+    letter-spacing: 0.5px;
+    max-width: 250px;
+}
+
+.newsletter-form-container {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    width: 550px;
+}
+
+.newsletter-subtext {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--color-dark);
+}
+
+.newsletter-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.newsletter-input-group input {
+    border: none;
+    border-bottom: 1px solid var(--color-dark);
+    padding: 10px 0;
+    font-size: 13px;
+    outline: none;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.btn-newsletter {
+    background: var(--color-black);
+    color: var(--color-white);
+    border: none;
+    padding: 14px 28px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    align-self: flex-start;
+    transition: opacity var(--transition-fast);
+}
+
+.btn-newsletter:hover {
+    opacity: 0.85;
+}
+
+/* Dark Footer */
+.site-footer {
+    background: var(--color-black);
+    color: var(--color-white);
+    padding: 70px 80px 40px 80px;
+}
+
+.footer-content {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 60px;
+}
+
+.footer-brand {
+    font-family: var(--font-heading);
+    font-size: 48px;
+    font-weight: 700;
+    letter-spacing: -1px;
+    text-transform: uppercase;
+}
+
+.footer-links-grid {
+    display: flex;
+    gap: 80px;
+}
+
+.footer-col {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.footer-col a {
+    font-size: 13px;
+    color: var(--color-white);
+    font-weight: 500;
+    transition: opacity var(--transition-fast);
+}
+
+.footer-col a:hover {
+    opacity: 0.7;
+}
+
+.footer-bottom {
+    display: flex;
+    justify-content: flex-end;
+    border-top: 1px solid #222222;
+    padding-top: 25px;
+}
+
+.copyright-text {
+    font-size: 12px;
+    color: #888888;
+}

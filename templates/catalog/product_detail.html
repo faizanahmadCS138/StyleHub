@@ -1,0 +1,174 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}
+  {{ product.name|upper }} — StyleHub
+{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'css/catalog.css' %}" />
+  <link rel="stylesheet" href="{% static 'css/product-detail.css' %}" />
+{% endblock %}
+
+{% block content %}
+  <div class="pdp-container">
+    <!--   ─────────────────────────────────────────────────────────────
+         1. BREADCRUMB NAVIGATION TRAIL
+         ─────────────────────────────────────────────────────────────   -->
+    <nav class="pdp-breadcrumbs" aria-label="Breadcrumb">
+      <a href="{% url 'catalog:home' %}">HOME</a>
+      {% for crumb in breadcrumbs %}
+        <span class="crumb-separator">/</span>
+        <a href="{% url 'catalog:category' slug=crumb.slug %}">{{ crumb.name }}</a>
+      {% endfor %}
+      <span class="crumb-separator">/</span>
+      <span class="active-crumb">{{ product.name|upper }}</span>
+    </nav>
+
+    <!--   ─────────────────────────────────────────────────────────────
+         2. SPLIT LAYOUT: GALLERY (LEFT) & DETAILS (RIGHT)
+         ─────────────────────────────────────────────────────────────   -->
+    <div class="pdp-split-layout">
+      <!-- LEFT COLUMN: MULTI-IMAGE GRID GALLERY -->
+      <div class="pdp-gallery-grid">
+        {% if images %}
+          {% for img in images %}
+            <div class="pdp-gallery-item">
+              <img src="{{ img.image.url }}" alt="{{ product.name }}" class="pdp-gallery-img" />
+            </div>
+          {% endfor %}
+        {% else %}
+          <div class="pdp-gallery-item" style="grid-column: span 2; height: 500px; display: flex; align-items: center; justify-content: center; color: #888; font-size: 13px; font-weight: 600;">NO IMAGE AVAILABLE</div>
+        {% endif %}
+      </div>
+
+      <!-- RIGHT COLUMN: PRODUCT DETAILS & SELECTION -->
+      <div class="pdp-details-wrapper">
+        <h1 class="pdp-title">{{ product.name }}</h1>
+
+        <div class="pdp-subtitle">RELAXED FIT</div>
+
+        <!-- Price Display -->
+        <div class="pdp-price-row">
+          {% if product.is_on_sale %}
+            <span class="pdp-sale-price">PKR {{ product.sale_price|floatformat:0|intcomma }}</span>
+            <span class="pdp-original-price">PKR {{ product.base_price|floatformat:0|intcomma }}</span>
+          {% else %}
+            <span>PKR {{ product.base_price|floatformat:0|intcomma }}</span>
+          {% endif %}
+        </div>
+
+        <!-- Color Swatches Selection -->
+        {% if colors %}
+          <div class="pdp-option-section">
+            <div class="pdp-color-name" id="selectedColorName">{{ colors.0.name|title }}</div>
+            <div class="pdp-color-swatches">
+              {% for color in colors %}
+                <span class="pdp-color-dot {% if forloop.first %}active{% endif %}" style="background-color: {{ color.hex }};" data-color="{{ color.name }}" title="{{ color.name }}"></span>
+              {% endfor %}
+            </div>
+          </div>
+        {% endif %}
+
+        <!-- Outfitters Clean Size Selector (Text numbers with active underline / strikethrough) -->
+        {% if sizes %}
+          <div class="pdp-option-section" style="margin-top: 25px;">
+            <div class="pdp-option-label">SELECT SIZE</div>
+            <div class="pdp-size-chips">
+              {% for sz in sizes %}
+                <button type="button" class="pdp-size-chip {% if not sz.has_stock %}out-of-stock{% endif %}" data-size="{{ sz.name }}">{{ sz.name }}</button>
+              {% endfor %}
+            </div>
+          </div>
+        {% endif %}
+
+        <!-- Full-Width Black ADD TO CART Button -->
+        <button type="button" class="pdp-add-to-cart-btn" id="addToBagBtn" data-product-slug="{{ product.slug }}">ADD TO CART <i class="fa-solid fa-bag-shopping" style="font-size: 15px;"></i></button>
+
+        <!-- Product Description Section (Matching Outfitters Screenshot 1 & 3) -->
+        <div class="pdp-description-block">
+          <div class="pdp-description-heading">PRODUCT DESCRIPTION</div>
+
+          <div class="pdp-description-text">{{ product.description|default:'These classic apparel pieces feature high-grade premium cotton fabric, tailored for everyday comfort and modern style.' }}</div>
+
+          <div class="pdp-model-details">Model Details: The Model is Wearing Size: M; Model Height: 5.11 Ft</div>
+        </div>
+
+        <!-- Collapsible Accordion Lines -->
+        <div class="pdp-accordion-group">
+          <div class="pdp-accordion-item">
+            <div class="pdp-accordion-header">
+              <span class="pdp-accordion-icon">+</span> PRODUCT DETAILS & COMPOSITION
+            </div>
+            <div class="pdp-accordion-content">
+              <p>100% Premium Combed Cotton. Machine wash cold with like colors. Do not bleach. Tumble dry low. Warm iron if needed.</p>
+            </div>
+          </div>
+
+          <div class="pdp-accordion-item">
+            <div class="pdp-accordion-header">
+              <span class="pdp-accordion-icon">+</span> DELIVERIES & RETURNS
+            </div>
+            <div class="pdp-accordion-content">
+              <p>Free standard delivery on orders over PKR 3,000. Delivered within 3-5 business days across Pakistan. Easy 14-day hassle-free exchange policy at any store or via pickup service.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!--   ─────────────────────────────────────────────────────────────
+         3. RELATED PRODUCTS SECTION (YOU MAY ALSO LIKE)
+         ─────────────────────────────────────────────────────────────   -->
+    {% if related_products %}
+      <div class="related-products-section">
+        <h2 class="related-products-title">YOU MAY ALSO LIKE</h2>
+
+        <div class="product-grid grid-cols-4">
+          {% for rel in related_products %}
+            <div class="product-card">
+              <a href="{% url 'catalog:product-detail' slug=rel.slug %}" class="product-card-image-wrap">
+                {% if rel.primary_image %}
+                  <img src="{{ rel.primary_image.image.url }}" alt="{{ rel.name }}" class="product-card-img" />
+                {% else %}
+                  <div class="product-card-img" style="background: #f4f4f4; display: flex; align-items: center; justify-content: center; color: #888; font-size: 12px; font-weight: 600;">NO IMAGE</div>
+                {% endif %}
+              </a>
+
+              <div class="product-card-info">
+                <a href="{% url 'catalog:product-detail' slug=rel.slug %}" class="product-card-title">{{ rel.name }}</a>
+                <div class="product-card-subtitle">REGULAR FIT | {{ rel.gender|upper }}</div>
+                <div class="product-card-price">
+                  {% if rel.is_on_sale %}
+                    <span class="price-sale">PKR {{ rel.sale_price|floatformat:0|intcomma }}</span>
+                    <span class="price-original">PKR {{ rel.base_price|floatformat:0|intcomma }}</span>
+                  {% else %}
+                    <span>PKR {{ rel.base_price|floatformat:0|intcomma }}</span>
+                  {% endif %}
+                </div>
+
+                {% if rel.color_swatches %}
+                  <div class="color-swatches-list">
+                    {% for swatch in rel.color_swatches %}
+                      <span class="color-swatch-dot {% if forloop.first %}active{% endif %}" style="background-color: {{ swatch.color_hex }};" title="{{ swatch.color }}"></span>
+                    {% endfor %}
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+  </div>
+{% endblock %}
+
+{% block extra_js %}
+  <script>
+    window.VARIANTS_DATA = {{ variants_json|safe }};
+</script>
+
+  
+  <script src="{% static 'js/product-detail.js' %}"></script>
+{% endblock %}

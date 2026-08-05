@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}
+    {% if selected_tag %}
+        {{ selected_tag.name|upper }} — {% if selected_category %}{{ selected_category.name|upper }}{% else %}STYLEHUB{% endif %}
+    {% elif selected_category %}
+        {{ selected_category.name|upper }} — StyleHub
+    {% else %}
+        ALL PRODUCTS — StyleHub
+    {% endif %}
+{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/catalog.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="catalog-container">
+
+    <!-- ─────────────────────────────────────────────────────────────
+         1. BREADCRUMBS TRAIL
+         ───────────────────────────────────────────────────────────── -->
+    <nav class="catalog-breadcrumbs" aria-label="Breadcrumb">
+        <a href="{% url 'catalog:home' %}">HOME</a>
+        {% for crumb in breadcrumbs %}
+            <span class="crumb-separator">/</span>
+            {% if forloop.last and not selected_tag %}
+                <span class="active-crumb">{{ crumb.name }}</span>
+            {% else %}
+                <a href="{% url 'catalog:category' slug=crumb.slug %}">{{ crumb.name }}</a>
+            {% endif %}
+        {% endfor %}
+
+        {% if selected_tag %}
+            <span class="crumb-separator">/</span>
+            <span class="active-crumb">{{ selected_tag.name|upper }}</span>
+        {% endif %}
+    </nav>
+
+    <!-- ─────────────────────────────────────────────────────────────
+         2. PAGE TITLE & GRID VIEW CONTROLS
+         ───────────────────────────────────────────────────────────── -->
+    <div class="catalog-toolbar">
+        <h1 class="catalog-page-title">
+            {% if selected_tag %}
+                {{ selected_tag.name }}
+            {% elif selected_category %}
+                {{ selected_category.name }}
+            {% elif query %}
+                SEARCH RESULTS FOR "{{ query|upper }}"
+            {% else %}
+                ALL PRODUCTS
+            {% endif %}
+        </h1>
+
+        <div class="catalog-grid-controls">
+            <button class="grid-view-btn" id="btnGrid3" title="3 Columns View"><i class="fa-solid fa-table-cells"></i></button>
+            <button class="grid-view-btn active" id="btnGrid4" title="4 Columns View"><i class="fa-solid fa-table-cells-large"></i></button>
+            <button class="grid-view-btn" id="btnGrid5" title="5 Columns View"><i class="fa-solid fa-grip-vertical"></i></button>
+        </div>
+    </div>
+
+    <!-- ─────────────────────────────────────────────────────────────
+         3. CATEGORY-SPECIFIC TAGS HORIZONTAL FILTER BAR
+         ───────────────────────────────────────────────────────────── -->
+    <div class="tags-filter-bar">
+        <!-- ALL TAB -->
+        <a href="{% if selected_category %}{% url 'catalog:category' slug=selected_category.slug %}{% else %}{% url 'catalog:product-list' %}{% endif %}" 
+           class="tag-filter-link {% if not selected_tag %}active{% endif %}">
+            ALL
+        </a>
+
+        <!-- TAGS SPECIFIC TO THIS CATEGORY ONLY -->
+        {% if category_tags %}
+            {% for tag in category_tags %}
+                <a href="?{% if selected_category %}category={{ selected_category.slug }}&{% endif %}tag={{ tag.slug }}" 
+                   class="tag-filter-link {% if selected_tag and selected_tag.slug == tag.slug %}active{% endif %}">
+                    {{ tag.name|upper }}
+                </a>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <!-- ─────────────────────────────────────────────────────────────
+         4. PRODUCTS GRID
+         ───────────────────────────────────────────────────────────── -->
+    {% if page_obj %}
+        <div class="product-grid grid-cols-4" id="productGrid">
+            {% for product in page_obj %}
+                <div class="product-card">
+                    <!-- Product Image Container -->
+                    <a href="{% url 'catalog:product-detail' slug=product.slug %}" class="product-card-image-wrap">
+                        {% if product.primary_image %}
+                            <img src="{{ product.primary_image.image.url }}" 
+                                 alt="{{ product.name }}" 
+                                 class="product-card-img" 
+                                 id="product-img-{{ product.id }}"
+                                 data-primary="{{ product.primary_image.image.url }}"
+                                 {% if product.secondary_image %}data-secondary="{{ product.secondary_image.image.url }}"{% endif %}>
+                        {% else %}
+                            <div class="product-card-img" style="background: #f4f4f4; display: flex; align-items: center; justify-content: center; color: #888; font-size: 12px; font-weight: 600;">
+                                NO IMAGE
+                            </div>
+                        {% endif %}
+                    </a>
+
+                    <!-- Product Card Info -->
+                    <div class="product-card-info">
+                        <a href="{% url 'catalog:product-detail' slug=product.slug %}" class="product-card-title">
+                            {{ product.name }}
+                        </a>
+
+                        <div class="product-card-subtitle">
+                            RELAXED FIT | {{ product.gender|upper }}
+                        </div>
+
+                        <div class="product-card-price">
+                            {% if product.is_on_sale %}
+                                <span class="price-sale">PKR {{ product.sale_price|floatformat:0|intcomma }}</span>
+                                <span class="price-original">PKR {{ product.base_price|floatformat:0|intcomma }}</span>
+                            {% else %}
+                                <span>PKR {{ product.base_price|floatformat:0|intcomma }}</span>
+                            {% endif %}
+                        </div>
+
+                        <!-- Color Swatches from Backend -->
+                        {% if product.color_swatches %}
+                            <div class="color-swatches-list">
+                                {% for swatch in product.color_swatches %}
+                                    <span class="color-swatch-dot {% if forloop.first %}active{% endif %}" 
+                                          style="background-color: {{ swatch.color_hex }};" 
+                                          data-product-id="{{ product.id }}"
+                                          data-color="{{ swatch.color }}"
+                                          title="{{ swatch.color }}"></span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+            <div style="display: flex; justify-content: center; gap: 15px; margin-top: 60px;">
+                {% if page_obj.has_previous %}
+                    <a href="?page={{ page_obj.previous_page_number }}{% if selected_category %}&category={{ selected_category.slug }}{% endif %}{% if tag_slug %}&tag={{ tag_slug }}{% endif %}" class="btn-auth-submit" style="width: auto; padding: 12px 24px; text-decoration: none;">PREVIOUS</a>
+                {% endif %}
+                <span style="font-size: 14px; font-weight: 700; display: flex; align-items: center; color: #111;">
+                    PAGE {{ page_obj.number }} OF {{ page_obj.paginator.num_pages }}
+                </span>
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}{% if selected_category %}&category={{ selected_category.slug }}{% endif %}{% if tag_slug %}&tag={{ tag_slug }}{% endif %}" class="btn-auth-submit" style="width: auto; padding: 12px 24px; text-decoration: none;">NEXT</a>
+                {% endif %}
+            </div>
+        {% endif %}
+
+    {% else %}
+        <div class="catalog-empty-state">
+            <h3>NO PRODUCTS FOUND</h3>
+            <p>Try switching tags to explore our latest collections.</p>
+        </div>
+    {% endif %}
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/catalog.js' %}"></script>
+{% endblock %}

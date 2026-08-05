@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}StyleHub — Official Store{% endblock %}
+
+{% block content %}
+<div style="padding: 80px 80px; text-align: center; background: #ffffff;">
+    <h1 style="font-size: 42px; font-weight: 800; letter-spacing: -0.5px; text-transform: uppercase; margin-bottom: 20px; font-family: 'Oswald', sans-serif;">WELCOME TO STYLEHUB</h1>
+    <p style="font-size: 16px; color: #555555; max-width: 600px; margin: 0 auto 40px auto; line-height: 1.6;">Discover our latest fashion collections. Explore trending apparel, accessories, and new arrivals crafted for your unique style.</p>
+    
+    <div style="display: flex; justify-content: center; gap: 20px;">
+        <a href="{% url 'catalog:product-list' %}" class="btn-auth-submit" style="display: inline-block; width: auto; padding: 16px 45px; background: #000000; color: #ffffff; border-color: #000000;">SHOP COLLECTION</a>
+    </div>
+</div>
+{% endblock %}

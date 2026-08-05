@@ -1,0 +1,9 @@
+/* Main CSS Manifest */
+@import url('variables.css');
+@import url('base.css');
+@import url('navbar.css');
+@import url('drawer.css');
+@import url('auth.css');
+@import url('catalog.css');
+@import url('product-detail.css');
+@import url('footer.css');
