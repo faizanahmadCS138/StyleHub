@@ -2,88 +2,90 @@
 {% load static %}
 
 {% block title %}
-  Shopping Basket — StyleHub
+Shopping Basket — StyleHub
 {% endblock %}
 
 {% block extra_css %}
-  <link rel="stylesheet" href="{% static 'css/cart.css' %}" />
+<link rel="stylesheet" href="{% static 'css/cart.css' %}" />
 {% endblock %}
 
 {% block content %}
-  <section class="cart-page-container">
-    <h1 class="cart-page-title">Shopping Basket</h1>
+<section class="cart-page-container">
+  <h1 class="cart-page-title">Shopping Basket</h1>
 
-    <!-- Table Header Row -->
-    <div class="cart-table-header">
-      <span class="col-product">PRODUCT</span>
-      <span class="col-quantity">QUANTITY</span>
-      <span class="col-total">TOTAL</span>
-    </div>
+  <!-- Table Header Row -->
+  <div class="cart-table-header">
+    <span class="col-product">PRODUCT</span>
+    <span class="col-quantity">QUANTITY</span>
+    <span class="col-total">TOTAL</span>
+  </div>
 
-    <!-- Items Container -->
-    <div class="cart-page-items" id="cartPageItems">
-      <div class="cart-page-loading">Loading your basket...</div>
-    </div>
+  <!-- Items Container -->
+  <div class="cart-page-items" id="cartPageItems">
+    <div class="cart-page-loading">Loading your basket...</div>
+  </div>
 
-    <!-- Subtotal & Checkout Section -->
-    <div class="cart-summary-section">
-      <div class="cart-summary-box">
-        <div class="subtotal-row">
-          <span class="subtotal-label">Subtotal</span>
-          <strong class="subtotal-value" id="cartPageTotal">PKR 0</strong>
-        </div>
-        <p class="tax-shipping-note">
-          Taxes, discounts and <a href="#">shipping</a> calculated at checkout.
-        </p>
+  <!-- Subtotal & Checkout Section -->
+  <div class="cart-summary-section">
+    <div class="cart-summary-box">
+      <div class="subtotal-row">
+        <span class="subtotal-label">Subtotal</span>
+        <strong class="subtotal-value" id="cartPageTotal">PKR 0</strong>
+      </div>
+      <p class="tax-shipping-note">
+        Taxes, discounts and <a href="#">shipping</a> calculated at checkout.
+      </p>
 
-        <div class="cart-action-buttons">
-          <a href="#" class="btn-checkout">Check out</a>
-          <a href="{% url 'catalog:home' %}" class="btn-continue">Continue shopping</a>
-        </div>
+      <div class="cart-action-buttons">
+        <a href="{% url 'orders:checkout' %}" class="btn-checkout">Check out</a>
+        <a href="{% url 'catalog:home' %}" class="btn-continue">Continue shopping</a>
       </div>
     </div>
+  </div>
 
-    <!-- YOU MAY ALSO LIKE Section -->
-    {% if related_products %}
-      <section class="cart-recommendations-section">
-        <h2 class="recommendations-title">YOU MAY ALSO LIKE</h2>
-        <div class="recommendations-grid">
-          {% for product in related_products %}
-            <div class="rec-card">
-              <a href="{% url 'catalog:product-detail' slug=product.slug %}" class="rec-image-wrapper">
-                {% if product.primary_image %}
-                  <img src="{{ product.primary_image.image.url }}" alt="{{ product.name }}" loading="lazy" />
-                {% endif %}
-              </a>
-              <a href="{% url 'catalog:product-detail' slug=product.slug %}" class="rec-product-title">{{ product.name|upper }}</a>
-              <div class="product-card-subtitle">REGULAR FIT | {{ product.gender|upper }}</div>
+  <!-- YOU MAY ALSO LIKE Section -->
+  {% if related_products %}
+  <section class="cart-recommendations-section">
+    <h2 class="recommendations-title">YOU MAY ALSO LIKE</h2>
+    <div class="recommendations-grid">
+      {% for product in related_products %}
+      <div class="rec-card">
+        <a href="{% url 'catalog:product-detail' slug=product.slug %}" class="rec-image-wrapper">
+          {% if product.primary_image %}
+          <img src="{{ product.primary_image.image.url }}" alt="{{ product.name }}" loading="lazy" />
+          {% endif %}
+        </a>
+        <a href="{% url 'catalog:product-detail' slug=product.slug %}" class="rec-product-title">{{ product.name|upper
+          }}</a>
+        <div class="product-card-subtitle">REGULAR FIT | {{ product.gender|upper }}</div>
 
-              <div class="product-card-price">
-                {% if product.is_on_sale %}
-                  <span class="price-sale">PKR {{ product.sale_price|floatformat:0 }}</span>
-                  <span class="price-original">PKR {{ product.base_price|floatformat:0 }}</span>
-                {% else %}
-                  <span>PKR {{ product.base_price|floatformat:0 }}</span>
-                {% endif %}
-              </div>
+        <div class="product-card-price">
+          {% if product.is_on_sale %}
+          <span class="price-sale">PKR {{ product.sale_price|floatformat:0 }}</span>
+          <span class="price-original">PKR {{ product.base_price|floatformat:0 }}</span>
+          {% else %}
+          <span>PKR {{ product.base_price|floatformat:0 }}</span>
+          {% endif %}
+        </div>
 
-              {% if product.color_swatches %}
-                <div class="color-swatches-list">
-                  {% for swatch in product.color_swatches %}
-                    <span class="color-swatch-dot {% if forloop.first %}active{% endif %}" style="background-color: {{ swatch.color_hex }}" title="{{ swatch.color }}"></span>
-                  {% endfor %}
-                </div>
-              {% endif %}
-            </div>
+        {% if product.color_swatches %}
+        <div class="color-swatches-list">
+          {% for swatch in product.color_swatches %}
+          <span class="color-swatch-dot {% if forloop.first %}active{% endif %}"
+            style="background-color: {{ swatch.color_hex }}" title="{{ swatch.color }}"></span>
           {% endfor %}
         </div>
-      </section>
-    {% endif %}
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
   </section>
+  {% endif %}
+</section>
 {% endblock %}
 
 {% block extra_js %}
-  <script src="{% static 'js/cart/cart_api.js' %}"></script>
-  <script src="{% static 'js/cart/cart_ui.js' %}"></script>
-  <script src="{% static 'js/cart/cart_main.js' %}"></script>
+<script src="{% static 'js/cart/cart_api.js' %}"></script>
+<script src="{% static 'js/cart/cart_ui.js' %}"></script>
+<script src="{% static 'js/cart/cart_main.js' %}"></script>
 {% endblock %}

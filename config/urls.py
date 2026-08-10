@@ -15,6 +15,9 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 
+# pyrefly: ignore [import-error]
+from apps.orders.views import StripeWebhookView
+
 # Customize admin site header
 admin.site.site_header  = 'StyleHub Admin'
 admin.site.site_title   = 'StyleHub'
@@ -36,6 +39,7 @@ urlpatterns = [
     path('', include('apps.catalog.urls', namespace='catalog')),
 
     path('', include('apps.cart.urls', namespace='cart')),
+    path('orders/', include('apps.orders.urls', namespace='orders')),
 ]
 
 # ── Debug Toolbar (development only) ──────────────────────────────

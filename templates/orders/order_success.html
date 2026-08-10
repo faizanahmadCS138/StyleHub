@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Order #{{ order.order_number }} Confirmed - StyleHub{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/order_success.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="success-container">
+    <div class="success-card">
+        <!-- Success Header -->
+        <div class="success-header">
+            <div class="checkmark-circle">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+            </div>
+            <div class="order-meta">
+                <span class="order-number">Order #{{ order.order_number }}</span>
+                <h1 class="thank-you-title">Thank you, {{ order.first_name }}!</h1>
+                <p class="confirmation-text">
+                    Your order is confirmed. We've sent a confirmation email to <strong>{{ order.email }}</strong>.
+                </p>
+            </div>
+        </div>
+
+        <!-- Order Information Grid -->
+        <div class="info-grid">
+            <div class="info-block">
+                <h3>Contact Information</h3>
+                <p>{{ order.email }}</p>
+                <p>{{ order.phone }}</p>
+            </div>
+            <div class="info-block">
+                <h3>Payment Method</h3>
+                <p>
+                    {% if order.payment_method == 'cod' %}
+                    Cash on Delivery (COD) — <span class="badge badge-pending">Pending Payment</span>
+                    {% else %}
+                    Debit / Credit Card — <span class="badge badge-success">Paid</span>
+                    {% endif %}
+                </p>
+            </div>
+            <div class="info-block">
+                <h3>Shipping Address</h3>
+                <p>{{ order.first_name }} {{ order.last_name }}</p>
+                <p>{{ order.address_line }}</p>
+                <p>{{ order.city_name }}{% if order.postal_code %}, {{ order.postal_code }}{% endif %}</p>
+                <p>Pakistan</p>
+            </div>
+            <div class="info-block">
+                <h3>Order Status</h3>
+                <p>
+                    <span class="badge badge-info">{{ order.get_status_display|default:order.status|title }}</span>
+                </p>
+            </div>
+        </div>
+
+        <!-- Order Items Summary -->
+        <div class="order-items-section">
+            <h2>Order Details</h2>
+            <div class="items-list">
+                {% for item in order.items.all %}
+                <div class="item-row">
+                    <div class="item-info">
+                        <span class="item-quantity">{{ item.quantity }}x</span>
+                        <div class="item-text">
+                            <div class="item-name">{{ item.product_name }}</div>
+                            <div class="item-meta">
+                                {{ item.color }}{% if item.size %} / {{ item.size }}{% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="item-price">Rs {{ item.subtotal|floatformat:2 }}</div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Price Breakdown -->
+            <div class="totals-breakdown">
+                <div class="total-row">
+                    <span>Subtotal</span>
+                    <span>Rs {{ order.subtotal|floatformat:2 }}</span>
+                </div>
+                <div class="total-row">
+                    <span>Shipping</span>
+                    <span>Rs {{ order.shipping_cost|floatformat:2 }}</span>
+                </div>
+                <div class="total-row grand-total">
+                    <span>Total</span>
+                    <span>Rs {{ order.total|floatformat:2 }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action CTA -->
+        <div class="success-actions">
+            <a href="{% url 'catalog:home' %}" class="btn-continue">Continue Shopping</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/order_success.js' %}"></script>
+{% endblock %}

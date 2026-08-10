@@ -58,5 +58,5 @@ class CustomUserAdmin(UserAdmin):
 class AddressAdmin(admin.ModelAdmin):
     list_display  = ('user', 'label', 'full_name', 'city', 'province', 'is_default')
     list_filter   = ('label', 'is_default', 'province')
-    search_fields = ('user__email', 'full_name', 'city', 'street')
+    search_fields = ('user__email', 'full_name', 'city', 'address_line')
     ordering      = ('user', '-is_default')

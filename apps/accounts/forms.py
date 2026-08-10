@@ -134,12 +134,12 @@ class AddressForm(forms.ModelForm):
 
     class Meta:
         model   = Address
-        fields  = ('label', 'full_name', 'phone', 'street', 'city', 'province', 'postal_code', 'country', 'is_default')
+        fields  = ('label', 'full_name', 'phone', 'address_line', 'city', 'province', 'postal_code', 'country', 'is_default')
         widgets = {
             'label'      : forms.Select(attrs={'class': 'form-input'}),
             'full_name'  : forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Full name'}),
             'phone'      : forms.TextInput(attrs={'class': 'form-input', 'placeholder': '+92 300 0000000'}),
-            'street'     : forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Street address'}),
+            'address_line'     : forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Street address'}),
             'city'       : forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'City'}),
             'province'   : forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Province'}),
             'postal_code': forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Postal code'}),

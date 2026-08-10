@@ -5,6 +5,7 @@ dev.py and prod.py import from this file and override as needed.
 """
 
 from pathlib import Path
+# pyrefly: ignore [missing-import]
 from decouple import config, Csv
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -61,6 +62,7 @@ LOCAL_APPS = [
     'apps.accounts',
     'apps.catalog',
     'apps.cart',
+    'apps.orders',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -244,3 +246,7 @@ DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='StyleHub <faizanahmad
 # MISC
 # ──────────────────────────────────────────────────────────────────────────────
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+STRIPE_PUBLIC_KEY = config("STRIPE_PUBLIC_KEY", default="")
+STRIPE_SECRET_KEY = config("STRIPE_SECRET_KEY", default="")
+STRIPE_WEBHOOK_SECRET = config("STRIPE_WEBHOOK_SECRET", default="")

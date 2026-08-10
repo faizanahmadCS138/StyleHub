@@ -31,3 +31,6 @@ whitenoise
 
 # Dev tools
 django-debug-toolbar
+
+#payment
+stripe
