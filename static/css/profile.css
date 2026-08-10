@@ -1,0 +1,539 @@
+/* ==========================================================
+   STYLEHUB ACCOUNT PAGE
+   ========================================================== */
+
+.account-page {
+    width: 100%;
+    min-height: 100vh;
+    padding: 50px 0 100px;
+    background: #fff;
+    color: #111;
+}
+
+
+/* ==========================================================
+   ACCOUNT HEADER
+   ========================================================== */
+
+.account-header {
+    margin-bottom: 55px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #111;
+}
+
+.account-header h1 {
+    margin: 0 0 8px;
+
+    font-size: 42px;
+    font-weight: 400;
+    line-height: 1.1;
+    letter-spacing: -1.5px;
+}
+
+.logout-link {
+    color: #555;
+
+    font-size: 13px;
+
+    text-decoration: underline;
+    text-underline-offset: 4px;
+
+    transition: color 0.2s ease;
+}
+
+.logout-link:hover {
+    color: #000;
+}
+
+
+/* ==========================================================
+   MAIN ACCOUNT LAYOUT
+   ========================================================== */
+
+.account-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 2.2fr) minmax(280px, 1fr);
+
+    gap: 70px;
+
+    align-items: start;
+}
+
+
+/* ==========================================================
+   SECTION HEADINGS
+   ========================================================== */
+
+.orders-section h2,
+.account-sidebar h2 {
+    margin: 0 0 22px;
+
+    font-size: 20px;
+    font-weight: 500;
+    line-height: 1.2;
+    letter-spacing: -0.3px;
+}
+
+
+/* ==========================================================
+   ORDERS TABLE
+   ========================================================== */
+
+.orders-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+
+    border-top: 1px solid #111;
+
+    -webkit-overflow-scrolling: touch;
+}
+
+.orders-table {
+    width: 100%;
+
+    min-width: 700px;
+
+    border-collapse: collapse;
+}
+
+
+/* Table Header */
+
+.orders-table thead th {
+    padding: 16px 12px;
+
+    border-bottom: 1px solid #ddd;
+
+    color: #666;
+
+    font-size: 10px;
+    font-weight: 500;
+
+    letter-spacing: 1px;
+    text-transform: uppercase;
+
+    text-align: left;
+
+    white-space: nowrap;
+}
+
+
+/* Table Body */
+
+.orders-table tbody td {
+    padding: 20px 12px;
+
+    border-bottom: 1px solid #e5e5e5;
+
+    color: #222;
+
+    font-size: 13px;
+
+    vertical-align: middle;
+
+    white-space: nowrap;
+}
+
+
+/* Row Hover */
+
+.orders-table tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+.orders-table tbody tr:hover {
+    background-color: #fafafa;
+}
+
+
+/* ==========================================================
+   ORDER NUMBER
+   ========================================================== */
+
+.order-number {
+    color: #111;
+
+    font-weight: 600;
+
+    text-decoration: none;
+
+    transition: color 0.2s ease;
+}
+
+.order-number:hover {
+    color: #666;
+
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+
+/* ==========================================================
+   ORDER STATUS
+   ========================================================== */
+
+.order-status {
+    display: inline-block;
+
+    padding: 6px 9px;
+
+    border: 1px solid #ccc;
+
+    background: #fff;
+
+    color: #333;
+
+    font-size: 9px;
+    font-weight: 500;
+
+    letter-spacing: 0.7px;
+
+    text-transform: uppercase;
+
+    white-space: nowrap;
+}
+
+
+/* Paid */
+
+.order-status-paid {
+    border-color: #111;
+
+    background: #111;
+
+    color: #fff;
+}
+
+
+/* Pending */
+
+.order-status-pending {
+    border-color: #ccc;
+
+    background: #fff;
+
+    color: #555;
+}
+
+
+/* ==========================================================
+   TRACK ORDER BUTTON
+   ========================================================== */
+
+.track-order-btn {
+    display: inline-flex;
+
+    align-items: center;
+    justify-content: center;
+
+    min-width: 80px;
+
+    padding: 9px 14px;
+
+    border: 1px solid #111;
+
+    background: #111;
+
+    color: #fff;
+
+    font-size: 10px;
+    font-weight: 500;
+
+    letter-spacing: 0.7px;
+
+    text-transform: uppercase;
+
+    text-decoration: none;
+
+    transition:
+        background-color 0.2s ease,
+        color 0.2s ease;
+}
+
+.track-order-btn:hover {
+    background: #fff;
+
+    color: #111;
+}
+
+
+/* ==========================================================
+   EMPTY ORDERS
+   ========================================================== */
+
+.empty-orders {
+    padding: 55px 20px;
+
+    border-top: 1px solid #111;
+    border-bottom: 1px solid #ddd;
+
+    text-align: center;
+}
+
+.empty-orders p {
+    margin: 0 0 22px;
+
+    color: #666;
+
+    font-size: 14px;
+}
+
+.shop-now-btn {
+    display: inline-block;
+
+    padding: 12px 25px;
+
+    border: 1px solid #111;
+
+    background: #111;
+
+    color: #fff;
+
+    font-size: 10px;
+    font-weight: 500;
+
+    letter-spacing: 0.8px;
+
+    text-transform: uppercase;
+
+    text-decoration: none;
+
+    transition:
+        background-color 0.2s ease,
+        color 0.2s ease;
+}
+
+.shop-now-btn:hover {
+    background: #fff;
+
+    color: #111;
+}
+
+
+/* ==========================================================
+   ACCOUNT SIDEBAR
+   ========================================================== */
+
+.account-sidebar {
+    padding-left: 35px;
+
+    border-left: 1px solid #ddd;
+}
+
+
+/* ==========================================================
+   USER NAME
+   ========================================================== */
+
+.account-user {
+    margin-bottom: 18px;
+
+    color: #111;
+
+    font-size: 16px;
+    font-weight: 600;
+}
+
+
+/* ==========================================================
+   ADDRESS
+   ========================================================== */
+
+.account-address {
+    margin-bottom: 18px;
+
+    color: #666;
+
+    font-size: 13px;
+
+    line-height: 1.7;
+}
+
+.account-address p {
+    margin: 0;
+}
+
+.no-address {
+    color: #999;
+}
+
+
+/* ==========================================================
+   VIEW ADDRESSES
+   ========================================================== */
+
+.view-addresses {
+    display: inline-block;
+
+    margin-bottom: 35px;
+
+    color: #111;
+
+    font-size: 12px;
+
+    text-decoration: underline;
+
+    text-underline-offset: 4px;
+
+    transition: color 0.2s ease;
+}
+
+.view-addresses:hover {
+    color: #666;
+}
+
+
+/* ==========================================================
+   ACCOUNT NAVIGATION
+   ========================================================== */
+
+.account-nav {
+    border-top: 1px solid #ddd;
+}
+
+.account-nav-item {
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    width: 100%;
+
+    padding: 15px 0;
+
+    border-bottom: 1px solid #ddd;
+
+    color: #111;
+
+    font-size: 13px;
+
+    text-decoration: none;
+
+    transition:
+        padding-left 0.2s ease,
+        color 0.2s ease;
+}
+
+.account-nav-item:hover {
+    padding-left: 5px;
+
+    color: #555;
+}
+
+.account-nav-item span:last-child {
+    font-size: 16px;
+}
+
+
+/* ==========================================================
+   TABLET
+   ========================================================== */
+
+@media (max-width: 991px) {
+
+    .account-page {
+        padding: 40px 0 80px;
+    }
+
+    .account-layout {
+        grid-template-columns: 1fr;
+
+        gap: 50px;
+    }
+
+    .account-sidebar {
+        padding-top: 40px;
+        padding-left: 0;
+
+        border-top: 1px solid #ddd;
+        border-left: none;
+    }
+
+}
+
+
+/* ==========================================================
+   MOBILE
+   ========================================================== */
+
+@media (max-width: 767px) {
+
+    .account-page {
+        padding: 30px 15px 60px;
+    }
+
+    .account-header {
+        margin-bottom: 35px;
+    }
+
+    .account-header h1 {
+        font-size: 32px;
+    }
+
+    .orders-section h2,
+    .account-sidebar h2 {
+        font-size: 18px;
+    }
+
+    /*
+       Horizontal scrolling table on mobile.
+    */
+
+    .orders-table-wrapper {
+        margin-left: 0;
+        margin-right: 0;
+    }
+
+    .orders-table {
+        min-width: 700px;
+    }
+
+    .orders-table thead th {
+        padding: 12px 10px;
+
+        font-size: 9px;
+    }
+
+    .orders-table tbody td {
+        padding: 16px 10px;
+
+        font-size: 12px;
+    }
+
+    .order-status {
+        padding: 5px 7px;
+
+        font-size: 8px;
+    }
+
+    .track-order-btn {
+        min-width: 70px;
+
+        padding: 8px 10px;
+
+        font-size: 9px;
+    }
+
+    .account-sidebar {
+        padding-top: 30px;
+    }
+
+}
+
+
+/* ==========================================================
+   VERY SMALL MOBILE
+   ========================================================== */
+
+@media (max-width: 400px) {
+
+    .account-page {
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+
+    .account-header h1 {
+        font-size: 28px;
+    }
+
+}

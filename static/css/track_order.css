@@ -1,0 +1,476 @@
+/* ==========================================================
+   TRACK ORDER PAGE
+   ========================================================== */
+
+.track-order-page {
+    min-height: 100vh;
+    padding: 45px 0 100px;
+    background: #fff;
+    color: #111;
+}
+
+
+/* ==========================================================
+   HEADER
+   ========================================================== */
+
+.track-order-header {
+    margin-bottom: 45px;
+    padding-bottom: 22px;
+
+    border-bottom: 1px solid #111;
+}
+
+.track-order-header h1 {
+    margin: 0 0 10px;
+
+    font-size: 38px;
+    font-weight: 400;
+
+    letter-spacing: -1px;
+}
+
+.track-order-header p {
+    margin: 0;
+
+    color: #777;
+
+    font-size: 13px;
+}
+
+
+/* ==========================================================
+   TRACKING CARD
+   ========================================================== */
+
+.tracking-card {
+    margin-bottom: 40px;
+
+    padding: 30px;
+
+    border: 1px solid #ddd;
+
+    background: #fff;
+}
+
+
+/* ==========================================================
+   TRACKING HEADER
+   ========================================================== */
+
+.tracking-card-header {
+    display: flex;
+
+    align-items: center;
+    justify-content: space-evenly;
+
+    margin-bottom: 35px;
+}
+
+.tracking-card-header h2 {
+    margin: 0;
+
+    font-size: 19px;
+    font-weight: 500;
+}
+
+.current-status {
+    padding: 7px 12px;
+
+    border: 1px solid #111;
+
+    background: #111;
+    color: #fff;
+
+    font-size: 9px;
+    font-weight: 500;
+
+    letter-spacing: .8px;
+    text-transform: uppercase;
+}
+
+
+/* ==========================================================
+   TRACKING STEPS
+   ========================================================== */
+
+.tracking-steps {
+    display: flex;
+
+    align-items: flex-start;
+
+    position: relative;
+
+    width: 100%;
+}
+
+
+/*
+    Connecting line
+*/
+
+.tracking-steps::before {
+    content: "";
+
+    position: absolute;
+
+    top: 15px;
+    left: 12.5%;
+    right: 12.5%;
+
+    height: 1px;
+
+    background: #ddd;
+
+    z-index: 0;
+}
+
+
+/* Individual step */
+
+.tracking-step {
+    position: relative;
+    z-index: 1;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    width: 25%;
+
+    text-align: center;
+
+    color: #aaa;
+}
+
+
+/* Circle */
+
+.tracking-step-circle {
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    width: 30px;
+    height: 30px;
+
+    margin-bottom: 12px;
+
+    border: 1px solid #ccc;
+
+    border-radius: 50%;
+
+    background: #fff;
+
+    color: #999;
+
+    font-size: 10px;
+}
+
+
+/* Step title */
+
+.tracking-step-title {
+    font-size: 11px;
+    font-weight: 500;
+
+    letter-spacing: .3px;
+}
+
+
+/* Step active */
+
+.tracking-step.active {
+    color: #111;
+}
+
+.tracking-step.active .tracking-step-circle {
+    border-color: #111;
+
+    background: #111;
+
+    color: #fff;
+}
+
+
+/* Completed check */
+
+.tracking-step.completed .tracking-step-circle {
+    border-color: #111;
+
+    background: #111;
+
+    color: #fff;
+}
+
+
+/* ==========================================================
+   COMPLETED CONNECTING LINE
+   ========================================================== */
+
+.tracking-line {
+    position: absolute;
+
+    top: 15px;
+    left: 12.5%;
+
+    height: 1px;
+
+    background: #111;
+
+    z-index: 0;
+
+    transition: width .3s ease;
+}
+
+
+/* ==========================================================
+   CANCELLED ORDER
+   ========================================================== */
+
+.tracking-cancelled {
+    padding: 18px 20px;
+
+    border: 1px solid #ddd;
+
+    background: #fafafa;
+
+    color: #555;
+
+    font-size: 13px;
+
+    text-align: center;
+}
+
+
+/* ==========================================================
+   ITEMS CARD
+   ========================================================== */
+
+.track-items-card {
+    border-top: 1px solid #111;
+    border-bottom: 1px solid #ddd;
+
+    background: #fff;
+}
+
+
+/* Items heading */
+
+.track-items-header {
+    padding: 20px 0;
+
+    border-bottom: 1px solid #ddd;
+}
+
+.track-items-header h2 {
+    margin: 0;
+
+    font-size: 19px;
+    font-weight: 500;
+}
+
+
+/* ==========================================================
+   ORDER ITEM
+   ========================================================== */
+
+.track-order-item {
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 20px 5px;
+
+    border-bottom: 1px solid #eee;
+}
+
+.track-order-item:last-child {
+    border-bottom: none;
+}
+
+
+/* Product information */
+
+.track-item-info {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 5px;
+}
+
+.track-item-name {
+    color: #111;
+
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.track-item-meta {
+    color: #777;
+
+    font-size: 12px;
+}
+
+
+/* Quantity */
+
+.track-item-quantity {
+    margin-left: auto;
+    margin-right: 40px;
+
+    color: #666;
+
+    font-size: 12px;
+}
+
+
+/* Price */
+
+.track-item-price {
+    min-width: 100px;
+
+    color: #111;
+
+    font-size: 13px;
+    font-weight: 500;
+
+    text-align: right;
+}
+
+
+/* ==========================================================
+   EMPTY ITEMS
+   ========================================================== */
+
+.track-empty-items {
+    padding: 30px 0;
+
+    color: #777;
+
+    font-size: 13px;
+}
+
+
+/* ==========================================================
+   BACK BUTTON
+   ========================================================== */
+
+.track-back {
+    display: inline-block;
+
+    margin-top: 35px;
+
+    color: #555;
+
+    font-size: 12px;
+
+    text-decoration: none;
+
+    transition: color .2s ease;
+}
+
+.track-back:hover {
+    color: #111;
+
+    text-decoration: underline;
+    text-underline-offset: 4px;
+}
+
+
+/* ==========================================================
+   RESPONSIVE
+   ========================================================== */
+
+@media (max-width: 767px) {
+
+    .track-order-page {
+        padding: 30px 15px 70px;
+    }
+
+    .track-order-header {
+        margin-bottom: 30px;
+    }
+
+    .track-order-header h1 {
+        font-size: 30px;
+    }
+
+    .tracking-card {
+        padding: 20px 15px;
+    }
+
+    .tracking-card-header {
+        align-items: flex-start;
+
+        flex-direction: column;
+
+        gap: 15px;
+
+        margin-bottom: 30px;
+    }
+
+    .tracking-steps::before {
+        left: 12%;
+        right: 12%;
+    }
+
+    .tracking-step-title {
+        font-size: 9px;
+    }
+
+    .tracking-step-circle {
+        width: 27px;
+        height: 27px;
+    }
+
+    .track-order-item {
+        align-items: flex-start;
+    }
+
+    .track-item-quantity {
+        margin-right: 15px;
+    }
+
+    .track-item-price {
+        min-width: 70px;
+    }
+
+}
+
+
+/* ==========================================================
+   SMALL MOBILE
+   ========================================================== */
+
+@media (max-width: 450px) {
+
+    .tracking-card {
+        padding: 18px 10px;
+    }
+
+    .tracking-step-title {
+        font-size: 8px;
+    }
+
+    .track-order-item {
+        flex-wrap: wrap;
+
+        gap: 8px;
+    }
+
+    .track-item-quantity {
+        margin-left: 0;
+        margin-right: 0;
+    }
+
+    .track-item-price {
+        margin-left: auto;
+    }
+
+}

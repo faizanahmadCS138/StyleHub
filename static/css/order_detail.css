@@ -1,0 +1,275 @@
+/* ==========================================================================
+   StyleHub Order Detail Page Custom CSS
+   ========================================================================== */
+
+/* Main Container */
+.order-detail-container {
+    max-width: 1000px;
+    margin: 40px auto;
+    padding: 0 20px;
+    font-family: 'Inter', 'Roboto', sans-serif;
+    color: #333;
+}
+
+/* Header & Navigation */
+.order-nav {
+    margin-bottom: 20px;
+}
+
+.order-back-link {
+    color: #666;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color 0.3s;
+}
+
+.order-back-link:hover {
+    color: #000;
+}
+
+.order-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #eaeaea;
+    padding-bottom: 20px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.order-title h1 {
+    font-size: 2.2rem;
+    font-weight: 500;
+    margin: 0 0 5px 0;
+    color: #111;
+    letter-spacing: -0.5px;
+}
+
+.order-date {
+    color: #777;
+    font-size: 0.95rem;
+    margin: 0;
+}
+
+/* Track Button */
+.btn-track {
+    display: inline-block;
+    padding: 10px 24px;
+    border: 1px solid #111;
+    background-color: transparent;
+    color: #111;
+    text-decoration: none;
+    font-weight: 500;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.btn-track:hover {
+    background-color: #111;
+    color: #fff;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Grid Layout */
+.order-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 30px;
+}
+
+@media (max-width: 768px) {
+    .order-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Cards */
+.order-card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+    margin-bottom: 30px;
+    overflow: hidden;
+    border: 1px solid #f2f2f2;
+}
+
+.order-card-header {
+    background: #fafafa;
+    padding: 20px 30px;
+    border-bottom: 1px solid #f2f2f2;
+}
+
+.order-card-header h2 {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: #111;
+}
+
+.order-card-body {
+    padding: 30px;
+}
+
+.order-card-title {
+    margin: 0 0 24px 0;
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: #111;
+}
+
+/* Table */
+.table-responsive {
+    overflow-x: auto;
+}
+
+.order-items-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.order-items-table th {
+    text-align: left;
+    padding: 15px 30px;
+    color: #777;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-bottom: 1px solid #eaeaea;
+    font-weight: 600;
+    background: #fafafa;
+}
+
+.order-items-table td {
+    padding: 24px 30px;
+    border-bottom: 1px solid #eaeaea;
+    vertical-align: middle;
+}
+
+.order-items-table tr:last-child td {
+    border-bottom: none;
+}
+
+.item-name {
+    font-weight: 500;
+    color: #111;
+    margin-bottom: 6px;
+    font-size: 1rem;
+}
+
+.item-meta {
+    font-size: 0.85rem;
+    color: #777;
+}
+
+.text-right {
+    text-align: right;
+}
+
+.item-total {
+    font-weight: 600;
+    color: #111;
+}
+
+/* Cost Summary */
+.cost-summary-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 14px;
+    color: #555;
+    font-size: 0.95rem;
+}
+
+.cost-summary-divider {
+    height: 1px;
+    background: #eaeaea;
+    margin: 20px 0;
+    border: none;
+}
+
+.cost-total {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #111;
+    margin-bottom: 0;
+}
+
+/* Status Badges */
+.status-group {
+    margin-bottom: 24px;
+}
+
+.status-group:last-child {
+    margin-bottom: 0;
+}
+
+.status-label {
+    display: block;
+    font-size: 0.75rem;
+    color: #777;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 8px 16px;
+    border-radius: 30px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+}
+
+.status-badge.paid {
+    background-color: #e6f6ec;
+    color: #1e7e34;
+}
+
+.status-badge.unpaid, .status-badge.pending {
+    background-color: #fff8e1;
+    color: #f57f17;
+}
+
+.status-badge.shipped, .status-badge.delivered {
+    background-color: #e3f2fd;
+    color: #1565c0;
+}
+
+.status-badge.default {
+    background-color: #f5f5f5;
+    color: #616161;
+}
+
+/* Shipping Details */
+.shipping-name {
+    font-weight: 600;
+    color: #111;
+    font-size: 1.05rem;
+    margin: 0 0 10px 0;
+}
+
+.shipping-address {
+    color: #555;
+    margin: 0 0 6px 0;
+    line-height: 1.5;
+    font-size: 0.95rem;
+}
+
+.contact-info {
+    margin-top: 20px;
+}
+
+.contact-info p {
+    margin: 0 0 6px 0;
+    font-size: 0.95rem;
+    color: #666;
+}
+
+.contact-info strong {
+    color: #111;
+    font-weight: 500;
+}

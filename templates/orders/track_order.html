@@ -1,0 +1,363 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+Track Order #{{ order.order_number }} — StyleHub
+{% endblock %}
+
+{% block content %}
+
+<div class="container">
+
+
+    <!-- =================================================
+         ORDER HEADER
+         ================================================= -->
+
+    <div class="track-order-header">
+
+        <h1>
+            Track Order #{{ order.order_number }}
+        </h1>
+
+        <p>
+            Placed on
+            {{ order.created_at|date:"F j, Y, g:i a" }}
+        </p>
+
+    </div>
+
+
+
+    <!-- =================================================
+         ORDER STATUS
+         ================================================= -->
+
+    {% if order.status == 'cancelled' %}
+
+    <div class="tracking-cancelled">
+        This order has been cancelled.
+    </div>
+
+    {% else %}
+
+    <div class="tracking-card">
+
+
+        <!-- Tracking Header -->
+
+        <div class="tracking-card-header">
+
+            <h2>
+                Order status
+            </h2>
+
+            <span class="current-status">
+                {{ order.get_status_display }}
+            </span>
+
+        </div>
+
+
+
+        <!-- Tracking Steps -->
+
+        <div class="tracking-steps">
+
+
+            <!-- Completed Line -->
+
+            {% if order.status == 'pending' %}
+
+            <div class="tracking-line" style="width: 0%;">
+            </div>
+
+            {% elif order.status == 'processing' %}
+
+            <div class="tracking-line" style="width: 25%;">
+            </div>
+
+            {% elif order.status == 'shipped' %}
+
+            <div class="tracking-line" style="width: 50%;">
+            </div>
+
+            {% elif order.status == 'delivered' %}
+
+            <div class="tracking-line" style="width: 75%;">
+            </div>
+
+            {% endif %}
+
+
+
+            <!-- =====================================
+                 STEP 1 — ORDER PLACED
+                 ===================================== -->
+
+            <div class="
+                    tracking-step
+                    {% if order.status in 'pending,processing,shipped,delivered' %}
+                        completed
+                    {% endif %}
+                ">
+
+                <div class="tracking-step-circle">
+
+                    {% if order.status in 'pending,processing,shipped,delivered' %}
+                    ✓
+                    {% else %}
+                    1
+                    {% endif %}
+
+                </div>
+
+                <div class="tracking-step-title">
+                    Order Placed
+                </div>
+
+            </div>
+
+
+
+            <!-- =====================================
+                 STEP 2 — PROCESSING
+                 ===================================== -->
+
+            <div class="
+                    tracking-step
+                    {% if order.status in 'processing,shipped,delivered' %}
+                        completed
+                    {% endif %}
+                ">
+
+                <div class="tracking-step-circle">
+
+                    {% if order.status in 'processing,shipped,delivered' %}
+                    ✓
+                    {% else %}
+                    2
+                    {% endif %}
+
+                </div>
+
+                <div class="tracking-step-title">
+                    Processing
+                </div>
+
+            </div>
+
+
+
+            <!-- =====================================
+                 STEP 3 — SHIPPED
+                 ===================================== -->
+
+            <div class="
+                    tracking-step
+                    {% if order.status in 'shipped,delivered' %}
+                        completed
+                    {% endif %}
+                ">
+
+                <div class="tracking-step-circle">
+
+                    {% if order.status in 'shipped,delivered' %}
+                    ✓
+                    {% else %}
+                    3
+                    {% endif %}
+
+                </div>
+
+                <div class="tracking-step-title">
+                    Shipped
+                </div>
+
+            </div>
+
+
+
+            <!-- =====================================
+                 STEP 4 — DELIVERED
+                 ===================================== -->
+
+            <div class="
+                    tracking-step
+                    {% if order.status == 'delivered' %}
+                        completed
+                    {% endif %}
+                ">
+
+                <div class="tracking-step-circle">
+
+                    {% if order.status == 'delivered' %}
+                    ✓
+                    {% else %}
+                    4
+                    {% endif %}
+
+                </div>
+
+                <div class="tracking-step-title">
+                    Delivered
+                </div>
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+    {% endif %}
+
+
+
+    <!-- =================================================
+         ORDER ITEMS
+         ================================================= -->
+
+    <div class="track-items-card">
+
+
+        <!-- Items Header -->
+
+        <div class="track-items-header">
+
+            <h2>
+                Items in this order
+            </h2>
+
+        </div>
+
+
+
+        <!-- Items -->
+
+        {% for item in order.items.all %}
+
+        <div class="track-order-item">
+
+
+            <!-- Product Information -->
+
+            <div class="track-item-info">
+
+                {% if item.variant.product.primary_image %}
+
+                <img src="{{ item.variant.product.primary_image.image.url }}" 
+                    alt="{{ item.variant.product.name }}"
+                    class="product-card-img" 
+                    id="product-img-{{ item.variant.product.id }}"
+                    data-primary="{{ item.variant.product.primary_image.image.url }}" 
+                    {% if item.variant.product.secondary_image %}
+                    data-secondary="{{ item.variant.product.secondary_image.image.url }}" 
+                    {% endif %}
+                    style="
+                        width: 80px;
+                        height: 100px;
+                        object-fit: cover;
+                        border-radius: 6px;
+                        margin-right: 15px;
+                        float: left;
+                    ">
+
+                {% else %}
+
+                <div class="product-card-img" style="
+                        background: #f4f4f4;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        color: #888;
+                        font-size: 11px;
+                        font-weight: 600;
+                        width: 80px;
+                        height: 100px;
+                        border-radius: 6px;
+                        margin-right: 15px;
+                        float: left;
+                    ">
+                    NO IMAGE
+                </div>
+
+                {% endif %}
+
+
+                <span class="track-item-name">
+                    {{ item.product_name }}
+                </span>
+
+
+                <span class="track-item-meta">
+
+                    Size: {{ item.size }}
+
+                    {% if item.color %}
+
+                    &nbsp; | &nbsp;
+
+                    Color: {{ item.color }}
+
+                    {% endif %}
+
+                </span>
+
+            </div>
+
+
+
+            <!-- Quantity -->
+
+            <div class="track-item-quantity">
+
+                x{{ item.quantity }}
+
+            </div>
+
+
+
+            <!-- Price -->
+
+            <div class="track-item-price">
+
+                Rs. {{ item.subtotal }}
+
+            </div>
+
+
+        </div>
+
+
+        {% empty %}
+
+        <div class="track-empty-items">
+
+            No items found in this order.
+
+        </div>
+
+        {% endfor %}
+
+
+    </div>
+
+
+
+    <!-- =================================================
+         BACK TO ORDERS
+         ================================================= -->
+
+    {% if user.is_authenticated %}
+
+    <a href="{% url 'userprofile:user_profile' %}" class="track-back">
+        ← Back to orders
+    </a>
+
+    {% endif %}
+
+
+</div>
+
+{% endblock %}

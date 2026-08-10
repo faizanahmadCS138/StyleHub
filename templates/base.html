@@ -1,237 +1,281 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>
-      {% block title %}
-        StyleHub — Official Store
-      {% endblock %}
-    </title>
-    <!-- FontAwesome icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-    <!-- Modular CSS Manifest -->
-    <link rel="stylesheet" href="{% static 'css/main.css' %}" />
-    <link rel="stylesheet" href="{% static 'css/cart.css' %}" />
-    {% block extra_css %}
 
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>
+    {% block title %}
+    StyleHub — Official Store
     {% endblock %}
-  </head>
-  <body data-cart-api-url="{% url 'cart:api_cart' %}">
-    <form id="csrfTokenForm" style="display: none;">
-      {% csrf_token %}
-    </form>
-    <!--       ─────────────────────────────────────────────────────────────
+  </title>
+  <!-- FontAwesome icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <!-- Modular CSS Manifest -->
+  <link rel="stylesheet" href="{% static 'css/main.css' %}" />
+  <link rel="stylesheet" href="{% static 'css/cart.css' %}" />
+  {% block extra_css %}
+
+  {% endblock %}
+</head>
+
+<body data-cart-api-url="{% url 'cart:api_cart' %}">
+  <form id="csrfTokenForm" style="display: none;">
+    {% csrf_token %}
+  </form>
+  <!--       ─────────────────────────────────────────────────────────────
          1. SITE HEADER
          ─────────────────────────────────────────────────────────────       -->
-    <header class="site-header">
-      <div class="header-left">
-        <button class="menu-toggle-btn" id="menuToggleBtn" aria-label="Open Navigation"><i class="fa-solid fa-bars"></i></button>
-        <a href="{% url 'catalog:home' %}" class="brand-logo">StyleHub</a>
+  <header class="site-header">
+    <div class="header-left">
+      <button class="menu-toggle-btn" id="menuToggleBtn" aria-label="Open Navigation"><i
+          class="fa-solid fa-bars"></i></button>
+      <a href="{% url 'catalog:home' %}" class="brand-logo">StyleHub</a>
+    </div>
+
+    <div class="header-right">
+      <form action="{% url 'catalog:search' %}" method="get" class="search-box">
+        <i class="fa-solid fa-magnifying-glass search-icon"></i>
+        <input type="text" name="q" placeholder="Search" />
+      </form>
+
+      {% if user.is_authenticated %}
+      <div class="user-dropdown-wrapper">
+        <a href="{% url 'userprofile:user_profile' %}" class="header-icon-btn" title="Account"><i
+            class="fa-solid fa-user-check" style="color: #000;"></i></a>
+        <div class="user-dropdown-menu">
+          <span class="user-name-title">Hello, {{ user.first_name|default:user.email }}</span>
+          <a href="{% url 'userprofile:user_profile' %}"><i class="fa-regular fa-id-card"></i> My Profile</a>
+          <a href="{% url 'accounts:addresses' %}"><i class="fa-solid fa-location-dot"></i> My Addresses</a>
+          <a href="{% url 'accounts:logout' %}" class="logout-link"><i class="fa-solid fa-arrow-right-from-bracket"></i>
+            Log Out</a>
+        </div>
       </div>
+      {% else %}
+      <a href="{% url 'accounts:login' %}" class="header-icon-btn" title="Sign In"><i
+          class="fa-regular fa-user"></i></a>
+      {% endif %}
 
-      <div class="header-right">
-        <form action="{% url 'catalog:search' %}" method="get" class="search-box">
-          <i class="fa-solid fa-magnifying-glass search-icon"></i>
-          <input type="text" name="q" placeholder="Search" />
-        </form>
+      <a href="{% url 'cart:cart_page' %}" class="header-icon-btn cart-trigger" id="cartTriggerBtn" title="Cart"
+        aria-label="Open cart drawer">
+        <i class="fa-solid fa-bag-shopping"></i>
+        <span class="cart-badge">0</span>
+      </a>
+    </div>
+  </header>
 
-        {% if user.is_authenticated %}
-          <div class="user-dropdown-wrapper">
-            <a href="{% url 'accounts:profile' %}" class="header-icon-btn" title="Account"><i class="fa-solid fa-user-check" style="color: #000;"></i></a>
-            <div class="user-dropdown-menu">
-              <span class="user-name-title">Hello, {{ user.first_name|default:user.email }}</span>
-              <a href="{% url 'accounts:profile' %}"><i class="fa-regular fa-id-card"></i> My Profile</a>
-              <a href="{% url 'accounts:addresses' %}"><i class="fa-solid fa-location-dot"></i> My Addresses</a>
-              <a href="{% url 'accounts:logout' %}" class="logout-link"><i class="fa-solid fa-arrow-right-from-bracket"></i> Log Out</a>
-            </div>
-          </div>
-        {% else %}
-          <a href="{% url 'accounts:login' %}" class="header-icon-btn" title="Sign In"><i class="fa-regular fa-user"></i></a>
-        {% endif %}
-
-        <a href="{% url 'cart:cart_page' %}" class="header-icon-btn cart-trigger" id="cartTriggerBtn" title="Cart" aria-label="Open cart drawer">
-          <i class="fa-solid fa-bag-shopping"></i>
-          <span class="cart-badge">0</span>
-        </a>
-      </div>
-    </header>
-
-    <!--       ─────────────────────────────────────────────────────────────
+  <!--       ─────────────────────────────────────────────────────────────
          2. NAVIGATION DRAWER OVERLAY (50% LEFT PANEL + BACKDROP BLUR)
          ─────────────────────────────────────────────────────────────       -->
-    <div class="nav-drawer-overlay" id="navDrawerOverlay">
-      <div class="nav-drawer-content">
-        <!-- Drawer Header Bar -->
-        <div class="drawer-header">
-          <button class="drawer-close-btn" id="drawerCloseBtn" aria-label="Close Navigation"><i class="fa-solid fa-xmark"></i></button>
-          <a href="{% url 'catalog:home' %}" class="drawer-brand">StyleHub</a>
+  <div class="nav-drawer-overlay" id="navDrawerOverlay">
+    <div class="nav-drawer-content">
+      <!-- Drawer Header Bar -->
+      <div class="drawer-header">
+        <button class="drawer-close-btn" id="drawerCloseBtn" aria-label="Close Navigation"><i
+            class="fa-solid fa-xmark"></i></button>
+        <a href="{% url 'catalog:home' %}" class="drawer-brand">StyleHub</a>
 
-          <div class="drawer-tabs">
-            {% for top_cat in top_nav_categories %}
-              <span class="drawer-tab {% if forloop.first %}active{% endif %}" data-tab="cat-{{ top_cat.id }}">{{ top_cat.name|upper }}</span>
-            {% endfor %}
-          </div>
-        </div>
-
-        <!-- Drawer Body Panels -->
-        <div class="drawer-body">
+        <div class="drawer-tabs">
           {% for top_cat in top_nav_categories %}
-            <div class="drawer-tab-content {% if forloop.first %}active{% endif %}" id="tab-content-cat-{{ top_cat.id }}">
-              <div class="drawer-left-col">
-                <div class="featured-links">
-                  <a href="{% url 'catalog:category' slug=top_cat.slug %}" class="featured-link">NEW IN</a>
-                  <a href="{% url 'catalog:category' slug=top_cat.slug %}" class="featured-link">RESORT LOOK BOOK</a>
-                  <a href="{% url 'catalog:category' slug=top_cat.slug %}" class="featured-link">RESORT</a>
-                </div>
-
-                <div class="category-section-title">SHOP BY CATEGORIES</div>
-                <ul class="category-links-list">
-                  <li class="category-link-item">
-                    <a href="{% url 'catalog:category' slug=top_cat.slug %}">VIEW ALL</a>
-                  </li>
-                  {% for subcat in top_cat.children.all %}
-                    {% if subcat.is_active %}
-                      <li class="category-link-item">
-                        <a href="{% url 'catalog:category' slug=subcat.slug %}">{{ subcat.name }}</a>
-                      </li>
-                    {% endif %}
-                  {% endfor %}
-                  {% if user.is_authenticated %}
-                    <li class="category-link-item" style="margin-top: 25px; border-top: 1px solid #eee; padding-top: 15px;">
-                      <a href="{% url 'accounts:logout' %}" style="color: #c62828;"><i class="fa-solid fa-arrow-right-from-bracket"></i> LOG OUT ({{ user.first_name|default:user.email }})</a>
-                    </li>
-                  {% endif %}
-                </ul>
-              </div>
-            </div>
+          <span class="drawer-tab {% if forloop.first %}active{% endif %}"
+            data-tab="cat-{{ top_cat.id }}">{{top_cat.name|upper }}</span>
           {% endfor %}
         </div>
       </div>
-    </div>
 
-    <!--       ─────────────────────────────────────────────────────────────
-         2B. CART DRAWER OVERLAY
-         ─────────────────────────────────────────────────────────────       -->
-    <div class="cart-drawer-overlay" id="cartDrawerOverlay" aria-hidden="true">
-      <aside class="cart-drawer-panel" id="cartDrawerPanel" aria-label="Shopping basket">
-        <div class="cart-drawer-header">
-          <h2 class="cart-drawer-title">ADDED TO YOUR BASKET</h2>
-          <button type="button" class="cart-drawer-close" id="cartDrawerCloseBtn" aria-label="Close cart drawer"><i class="fa-solid fa-xmark"></i></button>
-        </div>
-
-        <div class="cart-drawer-body">
-          <div class="cart-drawer-items" id="cartDrawerItems">
-            <div class="cart-drawer-empty">Your basket is empty.</div>
-          </div>
-
-          <div class="cart-drawer-summary">
-            <div class="cart-drawer-total-row">
-              <span>Total:</span>
-              <strong id="cartDrawerTotal">PKR 0</strong>
+      <!-- Drawer Body Panels -->
+      <div class="drawer-body">
+        {% for top_cat in top_nav_categories %}
+        <div class="drawer-tab-content {% if forloop.first %}active{% endif %}" id="tab-content-cat-{{ top_cat.id }}">
+          <div class="drawer-left-col">
+            <div class="featured-links">
+              <a href="{% url 'catalog:category' slug=top_cat.slug %}" class="featured-link">NEW IN</a>
+              <a href="{% url 'catalog:category' slug=top_cat.slug %}" class="featured-link">RESORT LOOK BOOK</a>
+              <a href="{% url 'catalog:category' slug=top_cat.slug %}" class="featured-link">RESORT</a>
             </div>
-            <p class="cart-drawer-note">Taxes, discounts and shipping calculated at checkout.</p>
-          </div>
 
-          <div class="cart-drawer-actions">
-            <a href="{% url 'cart:cart_page' %}" class="cart-drawer-checkout-btn">CHECK OUT</a>
-            <a href="{% url 'cart:cart_page' %}" class="cart-drawer-view-btn">VIEW SHOPPING BASKET</a>
+            <div class="category-section-title">SHOP BY CATEGORIES</div>
+            <ul class="category-links-list">
+              <li class="category-link-item">
+                <a href="{% url 'catalog:category' slug=top_cat.slug %}">VIEW ALL</a>
+              </li>
+              {% for subcat in top_cat.children.all %}
+              {% if subcat.is_active %}
+              <li class="category-link-item">
+                <a href="{% url 'catalog:category' slug=subcat.slug %}">{{ subcat.name }}</a>
+              </li>
+              {% endif %}
+              {% endfor %}
+              <li class="category-link-item">
+                <a href="{% url 'userprofile:track_order_lookup' %}">TRACK YOUR ORDER</a>
+              </li>
+              {% if user.is_authenticated %}
+              <li class="category-link-item" style="margin-top: 25px; border-top: 1px solid #eee; padding-top: 15px;">
+                <a href="{% url 'accounts:logout' %}" style="color: #c62828;"><i
+                    class="fa-solid fa-arrow-right-from-bracket"></i> LOG OUT
+                  ({{user.first_name|default:user.email}})</a>
+              </li>
+              {% endif %}
+            </ul>
           </div>
-
-          {% if drawer_recommended_products %}
-            <section class="cart-drawer-recommendations">
-              <h3 class="cart-drawer-recommendations-title">YOU MAY ALSO LIKE</h3>
-              <div class="cart-drawer-recommendations-grid">
-                {% for rel in drawer_recommended_products|slice:':12' %}
-                  <a href="{% url 'catalog:product-detail' slug=rel.slug %}" class="cart-drawer-product-card">
-                    {% if rel.primary_image %}
-                      <img src="{{ rel.primary_image.image.url }}" alt="{{ rel.name }}" />
-                    {% endif %}
-                  </a>
-                {% endfor %}
-              </div>
-            </section>
-          {% endif %}
         </div>
-      </aside>
-    </div>
-
-    <!-- Flash Messages -->
-    {% if messages %}
-      <div class="messages-container">
-        {% for message in messages %}
-          <div class="alert-message alert-{{ message.tags }}">{{ message }}</div>
         {% endfor %}
       </div>
-    {% endif %}
+    </div>
+  </div>
 
-    <!--       ─────────────────────────────────────────────────────────────
+  <!--       ─────────────────────────────────────────────────────────────
+         2B. CART DRAWER OVERLAY
+         ─────────────────────────────────────────────────────────────       -->
+  <div class="cart-drawer-overlay" id="cartDrawerOverlay" aria-hidden="true">
+    <aside class="cart-drawer-panel" id="cartDrawerPanel" aria-label="Shopping basket">
+      <div class="cart-drawer-header">
+        <h2 class="cart-drawer-title">ADDED TO YOUR BASKET</h2>
+        <button type="button" class="cart-drawer-close" id="cartDrawerCloseBtn" aria-label="Close cart drawer"><i
+            class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="cart-drawer-body">
+        <div class="cart-drawer-items" id="cartDrawerItems">
+          <div class="cart-drawer-empty">Your basket is empty.</div>
+        </div>
+
+        <div class="cart-drawer-summary">
+          <div class="cart-drawer-total-row">
+            <span>Total:</span>
+            <strong id="cartDrawerTotal">PKR 0</strong>
+          </div>
+          <p class="cart-drawer-note">Taxes, discounts and shipping calculated at checkout.</p>
+        </div>
+
+        <div class="cart-drawer-actions">
+          <a href="{% url 'orders:checkout' %}" class="cart-drawer-checkout-btn">CHECK OUT</a>
+          <a href="{% url 'cart:cart_page' %}" class="cart-drawer-view-btn">VIEW SHOPPING BASKET</a>
+        </div>
+
+        {% if drawer_recommended_products %}
+        <section class="cart-drawer-recommendations">
+          <h3 class="cart-drawer-recommendations-title">YOU MAY ALSO LIKE</h3>
+          <div class="cart-drawer-recommendations-grid">
+            {% for rel in drawer_recommended_products|slice:':12' %}
+            <a href="{% url 'catalog:product-detail' slug=rel.slug %}" class="cart-drawer-product-card">
+              {% if rel.primary_image %}
+              <img src="{{ rel.primary_image.image.url }}" alt="{{ rel.name }}" />
+              {% endif %}
+            </a>
+            {% endfor %}
+          </div>
+        </section>
+        {% endif %}
+      </div>
+    </aside>
+  </div>
+
+  <!-- Flash Messages -->
+  {% if messages %}
+  <div class="messages-container">
+    {% for message in messages %}
+    <div class="alert-message alert-{{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!--       ─────────────────────────────────────────────────────────────
          3. MAIN CONTENT CONTAINER
          ─────────────────────────────────────────────────────────────       -->
-    <main>
-      {% block content %}
-
-      {% endblock %}
-    </main>
-
-    <!--       ─────────────────────────────────────────────────────────────
-         4. NEWSLETTER SECTION
-         ─────────────────────────────────────────────────────────────       -->
-    <section class="newsletter-section">
-      <h2 class="newsletter-title">BE THE FIRST TO KNOW</h2>
-
-      <div class="newsletter-form-container">
-        <p class="newsletter-subtext">GET AN UPDATE OF ALL OUR LATEST COLLECTIONS, DISCOUNTS & FEATURES COMING UP</p>
-        <form class="newsletter-input-group" onsubmit="event.preventDefault();">
-          <input type="email" placeholder="ENTER YOUR EMAIL" required />
-          <button type="submit" class="btn-newsletter">SIGN ME UP!</button>
-        </form>
-      </div>
-    </section>
-
-    <!--       ─────────────────────────────────────────────────────────────
-         5. SITE FOOTER
-         ─────────────────────────────────────────────────────────────       -->
-    <footer class="site-footer">
-      <div class="footer-content">
-        <div class="footer-brand">StyleHub</div>
-
-        <div class="footer-links-grid">
-          <div class="footer-col">
-            <a href="#">Shopping Guide</a>
-            {% if user.is_authenticated %}
-              <a href="{% url 'accounts:profile' %}">My Profile</a>
-              <a href="{% url 'accounts:logout' %}">Log Out</a>
-            {% else %}
-              <a href="{% url 'accounts:login' %}">Log In/Sign Up</a>
-            {% endif %}
-            <a href="#">Exchange & Returns</a>
-            <a href="#">Shipping & Deliveries</a>
-            <a href="#">How To Buy</a>
-            <a href="#">Payment</a>
-          </div>
-          <div class="footer-col">
-            <a href="#">About Us</a>
-            <a href="#">Retail Stores</a>
-            <a href="#">Contact Us</a>
-          </div>
-        </div>
-      </div>
-
-      <div class="footer-bottom">
-        <span class="copyright-text">@ Copyrights Reserved by StyleHub 2026</span>
-      </div>
-    </footer>
-
-    <!-- Modular JS -->
-    <script src="{% static 'js/drawer.js' %}"></script>
-    <script src="{% static 'js/main.js' %}"></script>
-    <script src="{% static 'js/cart/cart_api.js' %}"></script>
-    <script src="{% static 'js/cart/cart_ui.js' %}"></script>
-    <script src="{% static 'js/cart/cart_main.js' %}"></script>
-    {% block extra_js %}
+  <main>
+    {% block content %}
 
     {% endblock %}
-  </body>
+  </main>
+
+  <!--       ─────────────────────────────────────────────────────────────
+         4. NEWSLETTER SECTION
+         ─────────────────────────────────────────────────────────────       -->
+  <section class="newsletter-section">
+
+    <!-- LEFT SIDE -->
+    <div class="newsletter-heading">
+      <h2>
+        BE THE FIRST<br>
+        TO KNOW
+      </h2>
+    </div>
+
+
+    <!-- RIGHT SIDE -->
+    <div class="newsletter-form-container">
+
+      <p class="newsletter-subtext">
+        GET AN UPDATE OF ALL OUR LATEST COLLECTIONS, DISCOUNTS &amp; FEATURES
+        COMING UP
+      </p>
+
+      <form class="newsletter-input-group" method="POST" action="{% url 'newsletter:subscribe' %}">
+
+        {% csrf_token %}
+
+        <input type="email" name="email" placeholder="ENTER YOUR EMAIL" required>
+
+        <button type="submit" class="btn-newsletter">
+          SIGN ME UP!
+        </button>
+
+      </form>
+
+    </div>
+
+  </section>
+
+  <!--       ─────────────────────────────────────────────────────────────
+         5. SITE FOOTER
+         ─────────────────────────────────────────────────────────────       -->
+  <footer class="site-footer">
+    <div class="footer-content">
+      <div class="footer-brand">StyleHub</div>
+
+      <div class="footer-links-grid">
+        <div class="footer-col">
+          <a href="#">Shopping Guide</a>
+          {% if user.is_authenticated %}
+          <a href="{% url 'userprofile:user_profile' %}">My Profile</a>
+          <a href="{% url 'accounts:logout' %}">Log Out</a>
+          {% else %}
+          <a href="{% url 'accounts:login' %}">Log In/Sign Up</a>
+          {% endif %}
+          <a href="#">Exchange & Returns</a>
+          <a href="#">Shipping & Deliveries</a>
+          <a href="#">How To Buy</a>
+          <a href="#">Payment</a>
+        </div>
+        <div class="footer-col">
+          <a href="#">About Us</a>
+          <a href="#">Retail Stores</a>
+          <a href="#">Contact Us</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <span class="copyright-text">@ Copyrights Reserved by StyleHub 2026</span>
+    </div>
+  </footer>
+  <a href="https://wa.me/{{ STYLEHUB_WHATSAPP_NUMBER }}" target="_blank" rel="noopener noreferrer"
+    class="whatsapp-float" aria-label="Chat with StyleHub on WhatsApp"
+    style="position: fixed; left: 25px; bottom: 25px; width: 58px; height: 58px; display: flex; align-items: center; justify-content: center; background: #25D366; color: #fff; border-radius: 50%; font-size: 30px; z-index: 99999; box-shadow: 0 4px 12px rgba(0,0,0,0.2); text-decoration: none;">
+    <i class="fab fa-whatsapp"></i>
+  </a>
+
+  <!-- Modular JS -->
+  <script src="{% static 'js/drawer.js' %}"></script>
+  <script src="{% static 'js/main.js' %}"></script>
+  <script src="{% static 'js/cart/cart_api.js' %}"></script>
+  <script src="{% static 'js/cart/cart_ui.js' %}"></script>
+  <script src="{% static 'js/cart/cart_main.js' %}"></script>
+  {% block extra_js %}
+
+  {% endblock %}
+</body>
+
 </html>

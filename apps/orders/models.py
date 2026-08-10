@@ -2,7 +2,7 @@ from django.db import models
 from django.conf import settings
 from apps.core.models import TimeStampedModel
 from apps.catalog.models import ProductVariant
-
+from decimal import Decimal
 
 class Order(TimeStampedModel):
     STATUS_CHOICES = [
@@ -84,7 +84,7 @@ class Order(TimeStampedModel):
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
     variant = models.ForeignKey(ProductVariant, on_delete=models.SET_NULL, null=True, related_name='order_items')
-
+    
     product_name = models.CharField(max_length=255)
     sku = models.CharField(max_length=60, blank=True)
     size = models.CharField(max_length=20, blank=True)
@@ -97,4 +97,7 @@ class OrderItem(models.Model):
 
     @property
     def subtotal(self):
-        return self.unit_price * self.quantity
+        # Fallback to 0 if unit_price or quantity is None
+        price = self.unit_price if self.unit_price is not None else Decimal('0.00')
+        qty = self.quantity if self.quantity is not None else 0
+        return price * qty

@@ -26,6 +26,10 @@ admin.site.index_title  = 'Store Management'
 urlpatterns = [
     # ── Django Admin ──────────────────────────────────────────────
     path('admin/', admin.site.urls),
+    path(
+    'newsletter/',
+    include('apps.newsletter.urls')
+    ),
 
     # ── Allauth (Google OAuth + email verification) ───────────────
     # Must come BEFORE our custom accounts/ so allauth handles /accounts/google/
@@ -33,7 +37,7 @@ urlpatterns = [
 
     # ── Our Custom Accounts ───────────────────────────────────────
     path('accounts/', include('apps.accounts.urls', namespace='accounts')),
-
+    path('profile/', include('apps.userprofile.urls', namespace='userprofile')),
     # ── Catalog (home + products + search + categories) ───────────
     # Mounted at root so home page is just '/'
     path('', include('apps.catalog.urls', namespace='catalog')),

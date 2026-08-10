@@ -173,3 +173,4 @@ def cities_api(request):
         'cities': fetch_pakistan_cities(),
         'shipping_cost': float(FLAT_SHIPPING_COST)
     })
+

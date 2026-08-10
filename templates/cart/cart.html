@@ -55,8 +55,7 @@ Shopping Basket — StyleHub
           <img src="{{ product.primary_image.image.url }}" alt="{{ product.name }}" loading="lazy" />
           {% endif %}
         </a>
-        <a href="{% url 'catalog:product-detail' slug=product.slug %}" class="rec-product-title">{{ product.name|upper
-          }}</a>
+        <a href="{% url 'catalog:product-detail' slug=product.slug %}" class="rec-product-title">{{ product.name|upper }}</a>
         <div class="product-card-subtitle">REGULAR FIT | {{ product.gender|upper }}</div>
 
         <div class="product-card-price">

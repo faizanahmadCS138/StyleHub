@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Track Order — StyleHub</title>
+
+    {% load static %}
+
+    <link rel="stylesheet" href="{% static 'css/track_order_lookup.css' %}">
+
+</head>
+
+
+<body>
+
+    <main class="track-page">
+
+        <!-- ==========================================
+             STYLEHUB LOGO
+             ========================================== -->
+
+        <div class="stylehub-logo">
+            STYLEHUB
+        </div>
+
+
+        <!-- ==========================================
+             TRACKING FORM
+             ========================================== -->
+
+        <div class="track-container">
+
+            <form method="POST" action="{% url 'userprofile:track_order_lookup' %}" class="track-form">
+
+                {% csrf_token %}
+
+
+                <!-- ORDER ID -->
+
+                <div class="track-input-wrapper">
+
+                    <input type="text" name="order_number" id="order_number" placeholder="Order ID *" autocomplete="off"
+                        required value="{{ request.POST.order_number|default:'' }}">
+
+                </div>
+
+
+                <!-- EMAIL / PHONE -->
+
+                <div class="track-input-wrapper">
+
+                    <input type="text" name="contact" id="contact" placeholder="Phone Number or Email *"
+                        autocomplete="email" required value="{{ request.POST.contact|default:'' }}">
+
+                </div>
+
+
+                <!-- TRACK BUTTON -->
+
+                <button type="submit" class="track-button">
+                    TRACK
+                </button>
+
+            </form>
+
+
+            <!-- ==========================================
+                 ERROR / SUCCESS MESSAGES
+                 ========================================== -->
+
+            {% if messages %}
+
+            <div class="track-messages">
+
+                {% for message in messages %}
+
+                <div class="track-message {{ message.tags }}">
+                    {{ message }}
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+            {% endif %}
+
+        </div>
+
+
+        <!-- ==========================================
+             OPTIONAL BACK TO STORE
+             ========================================== -->
+
+        <a href="/" class="back-to-store">
+            ← Back to StyleHub
+        </a>
+
+    </main>
+
+</body>
+
+</html>

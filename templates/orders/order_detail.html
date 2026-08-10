@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Order #{{ order.order_number }} — StyleHub{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/order_detail.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="order-detail-container">
+
+    <!-- Navigation & Header -->
+    <div class="order-nav">
+        <a href="{% url 'userprofile:user_profile' %}" class="order-back-link">&larr; Back to Account</a>
+    </div>
+
+    <div class="order-header-row">
+        <div class="order-title">
+            <h1>Order #{{ order.order_number }}</h1>
+            <p class="order-date">Placed on {{ order.created_at|date:"F j, Y, g:i a" }}</p>
+        </div>
+        <div class="order-actions">
+            <a href="{% url 'userprofile:track_order' order.order_number %}" class="btn-track">
+                Track Order
+            </a>
+        </div>
+    </div>
+
+    <div class="order-grid">
+        <!-- Left Column: Ordered Items & Summary -->
+        <div class="order-main-col">
+            <div class="order-card">
+                <div class="order-card-header">
+                    <h2>Order Items</h2>
+                </div>
+                <div class="order-card-body" style="padding: 0;">
+                    <div class="table-responsive">
+                        <table class="order-items-table">
+                            <thead>
+                                <tr>
+                                    <th>Item</th>
+                                    <th>Price</th>
+                                    <th>Qty</th>
+                                    <th class="text-right">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in order.items.all %}
+                                <tr>
+                                    <td>
+                                        {% if item.variant.product.primary_image %}
+                                        <img src="{{ item.variant.product.primary_image.image.url }}"
+                                            alt="{{ item.variant.product.name }}" class="product-card-img"
+                                            id="product-img-{{ item.variant.product.id }}"
+                                            data-primary="{{ item.variant.product.primary_image.image.url }}" {% if item.variant.product.secondary_image %}data-secondary="{{ item.variant.product.secondary_image.image.url }}" {% endif %}
+                                            style="width: 80px; height: 100px; object-fit: cover; border-radius: 6px; margin-right: 15px; float: left;">
+                                        {% else %}
+                                        <div class="product-card-img"
+                                            style="background: #f4f4f4; display: flex; align-items: center; justify-content: center; color: #888; font-size: 11px; font-weight: 600; width: 80px; height: 100px; border-radius: 6px; margin-right: 15px; float: left;">
+                                            NO IMAGE
+                                        </div>
+                                        {% endif %}
+                                        <div class="item-name">{{ item.product_name }}</div>
+                                        {% if item.size or item.color %}
+                                        <div class="item-meta">
+
+                                            {% if item.size %}Size: {{ item.size }}{% endif %}
+                                            {% if item.size and item.color %} | {% endif %}
+                                            {% if item.color %}Color: {{ item.color }}{% endif %}
+                                        </div>
+                                        {% endif %}
+                                    </td>
+                                    <td>Rs. {{ item.unit_price }}</td>
+                                    <td>{{ item.quantity }}</td>
+                                    <td class="text-right item-total">Rs. {{ item.subtotal }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Cost Summary -->
+            <div class="order-card">
+                <div class="order-card-body">
+                    <h5 class="order-card-title">Cost Summary</h5>
+                    <div class="cost-summary-row">
+                        <span>Subtotal</span>
+                        <span>Rs. {{ order.subtotal }}</span>
+                    </div>
+                    <div class="cost-summary-row">
+                        <span>Shipping Fee</span>
+                        <span>Rs. {{ order.shipping_cost }}</span>
+                    </div>
+                    <hr class="cost-summary-divider">
+                    <div class="cost-summary-row cost-total">
+                        <span>Total</span>
+                        <span>Rs. {{ order.total }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Shipping & Payment Info -->
+        <div class="order-sidebar-col">
+
+            <!-- Status Card -->
+            <div class="order-card">
+                <div class="order-card-body">
+                    <h5 class="order-card-title">Order Status</h5>
+
+                    <div class="status-group">
+                        <span class="status-label">Payment Status</span>
+                        <span
+                            class="status-badge {% if order.payment_status == 'paid' %}paid{% else %}unpaid{% endif %}">
+                            {{ order.get_payment_status_display }}
+                        </span>
+                    </div>
+
+                    <div class="status-group">
+                        <span class="status-label">Fulfillment Status</span>
+                        <span
+                            class="status-badge {% if order.status == 'shipped' or order.status == 'delivered' %}shipped{% elif order.status == 'processing' %}pending{% else %}default{% endif %}">
+                            {{ order.get_status_display }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Shipping Address Snapshot -->
+            <div class="order-card">
+                <div class="order-card-body">
+                    <h5 class="order-card-title">Shipping Details</h5>
+
+                    <p class="shipping-name">{{ order.full_name }}</p>
+                    <p class="shipping-address">{{ order.address_line }}</p>
+                    <p class="shipping-address">{{ order.city_name }}{% if order.postal_code %}, {{ order.postal_code }}{% endif %}</p>
+                    <p class="shipping-address">Pakistan</p>
+
+                    <hr class="cost-summary-divider">
+
+                    <div class="contact-info">
+                        <p><strong>Email:</strong> {{ order.email }}</p>
+                        <p><strong>Phone:</strong> {{ order.phone }}</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+{% endblock %}

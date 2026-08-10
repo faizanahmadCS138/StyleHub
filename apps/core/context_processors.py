@@ -32,3 +32,11 @@ def cart_drawer_recommendations(request):
         .order_by('-created_at')[:12]
     )
     return {'drawer_recommended_products': products}
+
+from django.conf import settings
+
+
+def stylehub_settings(request):
+    return {
+        "STYLEHUB_WHATSAPP_NUMBER": settings.STYLEHUB_WHATSAPP_NUMBER,
+    }

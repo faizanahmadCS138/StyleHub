@@ -63,6 +63,8 @@ LOCAL_APPS = [
     'apps.catalog',
     'apps.cart',
     'apps.orders',
+    'apps.userprofile',
+    'apps.newsletter',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -106,7 +108,8 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'apps.core.context_processors.categories_processor',
-                'apps.core.context_processors.cart_drawer_recommendations'
+                'apps.core.context_processors.cart_drawer_recommendations',
+                'apps.core.context_processors.stylehub_settings',
             ],
         },
     },
@@ -212,7 +215,7 @@ DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 MEDIA_URL = '/media/'    # only used for local fallback
 MEDIA_ROOT = BASE_DIR / 'media'
 
-
+STYLEHUB_WHATSAPP_NUMBER = config('STYLEHUB_WHATSAPP_NUMBER', default='')
 # ──────────────────────────────────────────────────────────────────────────────
 # DJANGO REST FRAMEWORK
 # ──────────────────────────────────────────────────────────────────────────────

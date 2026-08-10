@@ -1,0 +1,232 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Account — StyleHub{% endblock %}
+
+{% block content %}
+
+<div class="account-page">
+
+    <div class="container">
+
+        <!-- Account Header -->
+        <div class="account-header">
+
+            <div>
+                <h1>Account</h1>
+
+                <a href="{% url 'accounts:logout' %}" class="logout-link">
+                    Log out
+                </a>
+            </div>
+
+        </div>
+
+
+        <div class="account-layout">
+
+            <!-- =========================================
+                 ORDER HISTORY
+                 ========================================= -->
+
+            <section class="orders-section">
+
+                <h2>Order history</h2>
+
+                {% if orders %}
+
+                <div class="orders-table-wrapper">
+
+                    <table class="orders-table">
+
+                        <thead>
+                            <tr>
+                                <th>Order</th>
+                                <th>Date</th>
+                                <th>Payment</th>
+                                <th>Fulfillment</th>
+                                <th>Total</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+
+                            {% for order in orders %}
+
+                            <tr>
+
+                                <!-- Order Number -->
+                                <td>
+                                    <a href="{% url 'userprofile:order_detail' order.order_number %}"
+                                        class="order-number">
+                                        #{{ order.order_number }}
+                                    </a>
+                                </td>
+
+
+                                <!-- Date -->
+                                <td>
+                                    {{ order.created_at|date:"N j, Y" }}
+                                </td>
+
+
+                                <!-- Payment -->
+                                <td>
+
+                                    <span class="
+                                            order-status
+                                            {% if order.payment_status == 'paid' %}
+                                                order-status-paid
+                                            {% else %}
+                                                order-status-pending
+                                            {% endif %}
+                                        ">
+                                        {{ order.get_payment_status_display }}
+                                    </span>
+
+                                </td>
+
+
+                                <!-- Fulfillment -->
+                                <td>
+
+                                    <span class="order-status">
+                                        {{ order.get_status_display }}
+                                    </span>
+
+                                </td>
+
+
+                                <!-- Total -->
+                                <td>
+                                    Rs. {{ order.total }}
+                                </td>
+
+
+                                <!-- Action -->
+                                <td>
+
+                                    <a href="{% url 'userprofile:track_order' order.order_number %}"
+                                        class="track-order-btn">
+                                        Track
+                                    </a>
+
+                                </td>
+
+                            </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+
+                {% else %}
+
+                <div class="empty-orders">
+
+                    <p>You haven't placed any orders yet.</p>
+
+                    <a href="/" class="shop-now-btn">
+                        Start Shopping
+                    </a>
+
+                </div>
+
+                {% endif %}
+
+            </section>
+
+
+            <!-- =========================================
+                 ACCOUNT DETAILS
+                 ========================================= -->
+
+            <aside class="account-sidebar">
+
+                <h2>Account details</h2>
+
+
+                <!-- User -->
+                <div class="account-user">
+
+                    {{ user.full_name|default:user.email }}
+
+                </div>
+
+
+                <!-- Address -->
+                <div class="account-address">
+
+                    {% if default_address %}
+
+                    <p>{{ default_address.address_line }}</p>
+                    <p>{{ default_address.city_name }}</p>
+                    <p>Pakistan</p>
+
+                    {% elif user.orders.first %}
+
+                    {% with latest_order=user.orders.first %}
+
+                    <p>{{ latest_order.address_line }}</p>
+                    <p>{{ latest_order.city_name }}</p>
+                    <p>Pakistan</p>
+
+                    {% endwith %}
+
+                    {% else %}
+
+                    <p class="no-address">
+                        No address saved yet.
+                    </p>
+
+                    {% endif %}
+
+                </div>
+
+
+                <!-- Addresses -->
+                <a href="#" class="view-addresses">
+                    View addresses ({{ address_count }})
+                </a>
+
+
+                <!-- Account Navigation -->
+                <nav class="account-nav">
+
+                    <!-- <a href="#" class="account-nav-item">
+                        <span>Personal information</span>
+                        <span>→</span>
+                    </a> -->
+
+                    <a href="#" class="account-nav-item">
+                        <span>My addresses</span>
+                        <span>→</span>
+                    </a>
+
+                    <!-- <a href="#" class="account-nav-item">
+                        <span>Wishlist</span>
+                        <span>→</span>
+                    </a> -->
+
+                    <a href="{% url 'accounts:password_reset' %}" class="account-nav-item">
+                        <span>Change password</span>
+                        <span>→</span>
+                    </a>
+
+                </nav>
+
+            </aside>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
+```
