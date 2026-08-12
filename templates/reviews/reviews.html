@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Reviews — {{ product.name|upper }} — StyleHub{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/reviews.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="reviews-page-container">
+
+    <nav class="pdp-breadcrumbs" aria-label="Breadcrumb">
+        <a href="{% url 'catalog:home' %}">HOME</a>
+        <span class="crumb-separator">/</span>
+        <a href="{% url 'catalog:product-detail' slug=product.slug %}">{{ product.name|upper }}</a>
+        <span class="crumb-separator">/</span>
+        <span class="active-crumb">REVIEWS</span>
+    </nav>
+
+    <h1 class="reviews-page-title">{{ product.name }}</h1>
+
+    <div class="reviews-summary-row">
+        <div class="reviews-summary-stars">
+            {% for i in "12345" %}
+                <i class="fa-solid fa-star {% if forloop.counter <= avg_rating %}filled{% endif %}"></i>
+            {% endfor %}
+        </div>
+        <span class="reviews-summary-number">{{ avg_rating|floatformat:1 }}</span>
+        <span class="reviews-summary-count">({{ review_count }} review{{ review_count|pluralize }})</span>
+    </div>
+
+    <!-- REVIEWS SECTION -->
+    <div class="reviews-section">
+        <div class="reviews-header">
+            {% if user_has_reviewed %}
+                <button type="button" class="write-review-btn" disabled>
+                    <i class="fa-solid fa-check"></i> You reviewed this product
+                </button>
+            {% else %}
+                <button type="button" class="write-review-btn" id="writeReviewBtn"
+                        data-product-id="{{ product.id }}" data-product-name="{{ product.name }}">
+                    <i class="fa-solid fa-pen"></i> Write a Review
+                </button>
+            {% endif %}
+        </div>
+
+        <div class="reviews-list" id="reviewsList">
+            {% for review in reviews %}
+                {% include 'reviews/_review_card.html' with review=review %}
+            {% empty %}
+                <div class="reviews-empty-state" id="reviewsEmptyState">
+                    <div class="reviews-empty-icon"><i class="fa-regular fa-comments"></i></div>
+                    <h3>No Reviews Yet</h3>
+                    <p>Be the first to review this product and help others!</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- REVIEW MODAL -->
+    <div id="reviewModal" class="modal review-modal">
+        <div class="modal-content review-modal-content">
+            <div class="review-modal-header">
+                <h3 id="reviewModalTitle">Write a Review</h3>
+                <button type="button" class="modal-close" id="reviewModalClose">✕</button>
+            </div>
+            <form id="reviewForm">
+                {% csrf_token %}
+                <label>Your Rating <span class="required">*</span></label>
+                <div class="star-rating-input" id="starRatingInput">
+                    {% for i in "12345" %}
+                        <i class="fa-solid fa-star star-input" data-value="{{ forloop.counter }}"></i>
+                    {% endfor %}
+                </div>
+                <input type="hidden" name="rating" id="ratingInput" value="0">
+
+                <label for="reviewComment">Your Review</label>
+                <textarea name="comment" id="reviewComment" placeholder="Share your experience with this product..." rows="4"></textarea>
+
+                <div class="review-modal-actions">
+
+    <button
+        type="button"
+        id="reviewCancelBtn"
+        class="btn-cancel"
+    >
+        Cancel
+    </button>
+
+    <button
+        type="submit"
+        class="btn-submit-review"
+    >
+        Submit Review
+    </button>
+
+</div>
+            </form>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{% static 'js/reviews.js' %}"></script>
+{% endblock %}

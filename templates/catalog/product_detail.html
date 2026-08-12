@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load humanize %}
+{% load wishlist_tags %}
 
 {% block title %}
   {{ product.name|upper }} — StyleHub
@@ -9,6 +10,7 @@
 {% block extra_css %}
   <link rel="stylesheet" href="{% static 'css/catalog.css' %}" />
   <link rel="stylesheet" href="{% static 'css/product-detail.css' %}" />
+   <link rel="stylesheet" href="{% static 'css/reviews.css' %}" />
 {% endblock %}
 
 {% block content %}
@@ -45,7 +47,17 @@
 
       <!-- RIGHT COLUMN: PRODUCT DETAILS & SELECTION -->
       <div class="pdp-details-wrapper">
-        <h1 class="pdp-title">{{ product.name }}</h1>
+        <div class="pdp-title-row">
+          <h1 class="pdp-title">{{ product.name }}</h1>
+
+          <button type="button"
+          class="wishlist-heart pdp-wishlist-heart {% is_wishlisted request.user product as wl %}{% if wl %}wishlist-heart--active{% endif %}"
+          data-product-id="{{ product.id }}"
+          aria-label="Toggle wishlist">
+          <i class="fa-regular fa-heart heart-outline"></i>
+          <i class="fa-solid fa-heart heart-filled"></i>
+        </button>
+        </div>
 
         <div class="pdp-subtitle">RELAXED FIT</div>
 
@@ -117,6 +129,91 @@
         </div>
       </div>
     </div>
+    <div class="reviews-section">
+        <div class="reviews-summary-row">
+            <div class="reviews-summary-stars">
+                {% for i in "12345" %}
+                    <i class="fa-solid fa-star {% if forloop.counter <= avg_rating %}filled{% endif %}"></i>
+                {% endfor %}
+            </div>
+            <span class="reviews-summary-number">{{ avg_rating|floatformat:1 }}</span>
+            <span class="reviews-summary-count">({{ review_count }} review{{ review_count|pluralize }})</span>
+        </div>
+
+        <div class="reviews-header">
+            {% if user_has_reviewed %}
+                <button type="button" class="write-review-btn" disabled>
+                    <i class="fa-solid fa-check"></i> You reviewed this product
+                </button>
+            {% else %}
+                <button type="button" class="write-review-btn" id="writeReviewBtn"
+                        data-product-id="{{ product.id }}" data-product-name="{{ product.name }}">
+                    <i class="fa-solid fa-pen"></i> Write a Review
+                </button>
+            {% endif %}
+        </div>
+
+        <div class="reviews-list" id="reviewsList">
+            {% for review in reviews %}
+                <div class="review-card-wrap {% if forloop.counter > 5 %}review-hidden{% endif %}">
+                    {% include 'reviews/_review_card.html' with review=review %}
+                </div>
+            {% empty %}
+                <div class="reviews-empty-state" id="reviewsEmptyState">
+                    <div class="reviews-empty-icon"><i class="fa-regular fa-comments"></i></div>
+                    <h3>No Reviews Yet</h3>
+                    <p>Be the first to review this product and help others!</p>
+                </div>
+            {% endfor %}
+        </div>
+
+        {% if review_count > 5 %}
+            <div class="see-more-reviews-wrap">
+                <a href="{% url 'reviews:product-reviews' product_id=product.id %}" class="see-more-reviews-btn">
+                    See All {{ review_count }} Reviews
+                </a>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- REVIEW MODAL -->
+<div id="reviewModal" class="review-modal">
+    <div class="review-modal-content">
+
+        <!-- HEADER -->
+        <div class="review-modal-header">
+            <h2 id="reviewModalTitle">Write a Review</h2>
+            <button type="button" id="reviewModalClose" aria-label="Close review modal">&times;</button>
+        </div>
+
+        <!-- BODY / FORM -->
+        <form id="reviewForm">
+
+            <!-- RATING -->
+            <label>Your Rating <span class="required">*</span></label>
+            <div class="star-rating-input">
+                <button type="button" class="star-input" data-value="1" aria-label="1 star">★</button>
+                <button type="button" class="star-input" data-value="2" aria-label="2 stars">★</button>
+                <button type="button" class="star-input" data-value="3" aria-label="3 stars">★</button>
+                <button type="button" class="star-input" data-value="4" aria-label="4 stars">★</button>
+                <button type="button" class="star-input" data-value="5" aria-label="5 stars">★</button>
+            </div>
+            <input type="hidden" name="rating" id="ratingInput" value="0">
+
+            <!-- COMMENT -->
+            <label for="reviewComment">Your Review</label>
+            <textarea id="reviewComment" name="comment" rows="6" placeholder="Share your experience with this product..."></textarea>
+
+            <!-- ACTIONS -->
+            <div class="review-modal-actions">
+                <button type="button" id="reviewCancelBtn" class="btn-cancel">Cancel</button>
+                <button type="submit" class="btn-submit-review">Submit Review</button>
+            </div>
+
+        </form>
+
+    </div>
+</div>
 
     <!--   ─────────────────────────────────────────────────────────────
          3. RELATED PRODUCTS SECTION (YOU MAY ALSO LIKE)
@@ -135,6 +232,13 @@
                   <div class="product-card-img" style="background: #f4f4f4; display: flex; align-items: center; justify-content: center; color: #888; font-size: 12px; font-weight: 600;">NO IMAGE</div>
                 {% endif %}
               </a>
+              <button type="button"
+              class="wishlist-heart {% is_wishlisted request.user rel as wl2 %}{% if wl2 %}wishlist-heart--active{% endif %}"
+              data-product-id="{{ rel.id }}"
+              aria-label="Toggle wishlist">
+              <i class="fa-regular fa-heart heart-outline"></i>
+              <i class="fa-solid fa-heart heart-filled"></i>
+              </button>
 
               <div class="product-card-info">
                 <a href="{% url 'catalog:product-detail' slug=rel.slug %}" class="product-card-title">{{ rel.name }}</a>
@@ -167,8 +271,8 @@
 {% block extra_js %}
   <script>
     window.VARIANTS_DATA = {{ variants_json|safe }};
-</script>
-
-  
+  </script>
   <script src="{% static 'js/product-detail.js' %}"></script>
+  <script src="{% static 'js/wishlist.js' %}"></script>
+  <script src="{% static 'js/reviews.js' %}"></script>
 {% endblock %}

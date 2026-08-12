@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 {% load humanize %}
+{% load wishlist_tags %}
 
 {% block title %}
     {% if selected_tag %}
@@ -105,7 +106,12 @@
                             </div>
                         {% endif %}
                     </a>
-
+                    <button type="button" 
+                    class="wishlist-heart {% is_wishlisted request.user product as wl %}{% if wl %}wishlist-heart--active{% endif %}"
+                    data-product-id="{{ product.id }}" aria-label="Toggle wishlist">
+                        <i class="fa-regular fa-heart heart-outline"></i>
+                        <i class="fa-solid fa-heart heart-filled"></i>
+                    </button>
                     <!-- Product Card Info -->
                     <div class="product-card-info">
                         <a href="{% url 'catalog:product-detail' slug=product.slug %}" class="product-card-title">
@@ -124,6 +130,15 @@
                                 <span>PKR {{ product.base_price|floatformat:0|intcomma }}</span>
                             {% endif %}
                         </div>
+                         <!-- ⭐ RATING STARS — ADD THIS BLOCK -->
+                        {% with rating=product.avg_rating|default:5 %}
+                        <div class="product-card-rating">
+                            {% for i in "12345" %}
+                                <i class="fa-solid fa-star {% if forloop.counter <= rating %}filled{% endif %}"></i>
+                            {% endfor %}
+                        </div>
+                        {% endwith %}
+                        <!-- END RATING STARS -->
 
                         <!-- Color Swatches from Backend -->
                         {% if product.color_swatches %}
@@ -169,4 +184,6 @@
 
 {% block extra_js %}
 <script src="{% static 'js/catalog.js' %}"></script>
+    <script src="{% static 'js/wishlist.js' %}"></script>
+    <script src="{% static 'js/reviews.js' %}"></script>
 {% endblock %}

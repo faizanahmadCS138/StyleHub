@@ -34,3 +34,6 @@ django-debug-toolbar
 
 #payment
 stripe
+
+#
+sendgrid email service

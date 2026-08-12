@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% load static %}
+{% load humanize %}
+{% load wishlist_tags %}
+
+{% block title %}MY WISHLIST — StyleHub{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/catalog.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="catalog-container">
+
+    <!-- Breadcrumbs -->
+    <nav class="catalog-breadcrumbs" aria-label="Breadcrumb">
+        <a href="{% url 'catalog:home' %}">HOME</a>
+        <span class="crumb-separator">/</span>
+        <span class="active-crumb">WISHLIST</span>
+    </nav>
+
+    <!-- Page Title -->
+    <div class="catalog-toolbar">
+        <h1 class="catalog-page-title">MY WISHLIST</h1>
+    </div>
+
+    <!-- Products Grid -->
+    {% if items %}
+        <div class="product-grid grid-cols-4 wishlist-grid" id="productGrid">
+            {% for item in items %}
+                {% with product=item.product %}
+                <div class="product-card wishlist-card">
+                    <!-- Product Image Container -->
+                    <a href="{% url 'catalog:product-detail' slug=product.slug %}" class="product-card-image-wrap">
+                        {% if product.primary_image %}
+                            <img src="{{ product.primary_image.image.url }}" 
+                                 alt="{{ product.name }}" 
+                                 class="product-card-img" 
+                                 id="product-img-{{ product.id }}"
+                                 data-primary="{{ product.primary_image.image.url }}"
+                                 {% if product.secondary_image %}data-secondary="{{ product.secondary_image.image.url }}"{% endif %}>
+                        {% else %}
+                            <div class="product-card-img" style="background: #f4f4f4; display: flex; align-items: center; justify-content: center; color: #888; font-size: 12px; font-weight: 600;">
+                                NO IMAGE
+                            </div>
+                        {% endif %}
+                    </a>
+                    <button type="button" 
+                    class="wishlist-heart wishlist-heart--active"
+                    data-product-id="{{ product.id }}" aria-label="Toggle wishlist">
+                        <i class="fa-regular fa-heart heart-outline"></i>
+                        <i class="fa-solid fa-heart heart-filled"></i>
+                    </button>
+                    <!-- Product Card Info -->
+                    <div class="product-card-info">
+                        <a href="{% url 'catalog:product-detail' slug=product.slug %}" class="product-card-title">
+                            {{ product.name }}
+                        </a>
+
+                        <div class="product-card-subtitle">
+                            RELAXED FIT | {{ product.gender|upper }}
+                        </div>
+
+                        <div class="product-card-price">
+                            {% if product.is_on_sale %}
+                                <span class="price-sale">PKR {{ product.sale_price|floatformat:0|intcomma }}</span>
+                                <span class="price-original">PKR {{ product.base_price|floatformat:0|intcomma }}</span>
+                            {% else %}
+                                <span>PKR {{ product.base_price|floatformat:0|intcomma }}</span>
+                            {% endif %}
+                        </div>
+
+                        <!-- Color Swatches from Backend -->
+                        {% if product.color_swatches %}
+                            <div class="color-swatches-list">
+                                {% for swatch in product.color_swatches %}
+                                    <span class="color-swatch-dot {% if forloop.first %}active{% endif %}" 
+                                          style="background-color: {{ swatch.color_hex }};" 
+                                          data-product-id="{{ product.id }}"
+                                          data-color="{{ swatch.color }}"
+                                          title="{{ swatch.color }}"></span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endwith %}
+            {% endfor %}
+        </div>
+
+    {% else %}
+        <div class="catalog-empty-state">
+            <h3>YOUR WISHLIST IS EMPTY</h3>
+            <p>Browse our collections and add your favorite pieces.</p>
+        </div>
+    {% endif %}
+
+</div>
+{% endblock %}

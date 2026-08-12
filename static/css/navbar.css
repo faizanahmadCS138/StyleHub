@@ -91,6 +91,22 @@
     justify-content: center;
 }
 
+.wishlist-badge {
+    position: absolute;
+    top: -6px;
+    right: -10px;
+    background: var(--color-black);
+    color: var(--color-white);
+    font-size: 10px;
+    font-weight: 700;
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 /* User Account Dropdown Menu */
 .user-dropdown-wrapper {
     position: relative;

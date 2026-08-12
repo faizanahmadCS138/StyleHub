@@ -206,6 +206,29 @@
     opacity: 0.6;
     border-bottom: 2px solid transparent;
 }
+.pdp-title-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.pdp-title-row .pdp-title {
+    margin: 0; /* remove default h1 margin so it aligns cleanly with the heart */
+}
+
+.pdp-wishlist-heart {
+    position: static;      /* override the absolute positioning used on grid cards */
+    width: 38px;
+    height: 38px;
+    font-size: 18px;
+    flex-shrink: 0;
+    background: #f4f4f4;
+}
+
+.pdp-wishlist-heart.wishlist-heart--active {
+    background: #fdeaea;
+}
 
 /* Full-Width Black ADD TO CART Button */
 .pdp-add-to-cart-btn {

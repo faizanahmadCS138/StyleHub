@@ -1,0 +1,18 @@
+<div class="review-card">
+    <div class="review-avatar">
+        {{ review.user.first_name|default:review.user.email|make_list|first|upper }}
+    </div>
+    <div class="review-body">
+        <div class="review-name">{{ review.user.first_name|default:review.user.email }}</div>
+        <div class="review-date">{{ review.created_at|date:"M d, Y" }}</div>
+        <div class="review-stars">
+            {% for i in "12345" %}
+                <i class="fa-solid fa-star {% if forloop.counter <= review.rating %}filled{% endif %}"></i>
+            {% endfor %}
+            <span class="review-rating-number">{{ review.rating }}.0</span>
+        </div>
+        {% if review.comment %}
+            <div class="review-comment">{{ review.comment }}</div>
+        {% endif %}
+    </div>
+</div>

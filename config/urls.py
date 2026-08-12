@@ -50,6 +50,11 @@ urlpatterns = [
         "promotions/",
         include("apps.promotions.urls", namespace='promotions')
     ),
+
+    # wishlist
+    path('wishlist/', include('apps.wishlist.urls', namespace='wishlist')),
+
+    path('reviews/', include('apps.reviews.urls', namespace='reviews')),
 ]
 
 # ── Debug Toolbar (development only) ──────────────────────────────
