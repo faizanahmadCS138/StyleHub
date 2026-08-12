@@ -1,6 +1,8 @@
 from django.contrib import admin
 from django.utils.html import format_html
+from django.db import transaction
 
+from apps.newsletter.services import send_new_product_email
 from .models import Category, Product, ProductImage, ProductVariant, Tag, Size
 
 
@@ -100,3 +102,23 @@ class ProductAdmin(admin.ModelAdmin):
     stock_status.short_description = 'Stock'
 
 
+    def save_model(self, request, obj, form, change):
+        """
+            Detect whether this is a newly created product.
+        """
+        obj._is_new_product = not change
+
+        super().save_model(request, obj, form, change)
+
+
+    def save_related(self, request, form, formsets, change):
+        """
+            Save ProductImage/ProductVariant first.
+        Then send the newsletter after the database transaction commits.
+        """
+        super().save_related(request, form, formsets, change)
+
+        if getattr(form.instance, '_is_new_product', False):
+            transaction.on_commit(
+                lambda: send_new_product_email(form.instance)
+            )

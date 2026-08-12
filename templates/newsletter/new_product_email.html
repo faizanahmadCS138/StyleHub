@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>New Arrival — StyleHub</title>
+</head>
+
+
+<body style="
+        margin: 0;
+        padding: 0;
+        background-color: #f5f5f5;
+        font-family: Arial, Helvetica, sans-serif;
+    ">
+
+    <!-- Main Background -->
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+        ">
+
+        <tr>
+
+            <td align="center" style="padding: 40px 15px;">
+
+
+                <!-- Email Container -->
+                <table width="600" cellpadding="0" cellspacing="0" border="0" style="
+                        width: 100%;
+                        max-width: 600px;
+                        background-color: #ffffff;
+                    ">
+
+
+                    <!-- ================================= -->
+                    <!-- HEADER -->
+                    <!-- ================================= -->
+
+                    <tr>
+
+                        <td align="center" style="
+                                padding: 30px 20px;
+                                border-bottom: 1px solid #eeeeee;
+                            ">
+
+                            <h1 style="
+                                    margin: 0;
+                                    padding: 0;
+                                    font-size: 28px;
+                                    line-height: 1.2;
+                                    font-weight: 600;
+                                    letter-spacing: 3px;
+                                    color: #111111;
+                                ">
+                                STYLEHUB
+                            </h1>
+
+                        </td>
+
+                    </tr>
+
+
+                    <!-- ================================= -->
+                    <!-- NEW ARRIVAL INTRO -->
+                    <!-- ================================= -->
+
+                    <tr>
+
+                        <td align="center" style="
+                                padding: 40px 30px 20px;
+                            ">
+
+                            <p style="
+                                    margin: 0 0 10px;
+                                    padding: 0;
+                                    font-size: 12px;
+                                    line-height: 1.5;
+                                    letter-spacing: 2px;
+                                    text-transform: uppercase;
+                                    color: #777777;
+                                ">
+                                JUST ARRIVED
+                            </p>
+
+
+                            <h2 style="
+                                    margin: 0;
+                                    padding: 0;
+                                    font-size: 32px;
+                                    line-height: 1.3;
+                                    font-weight: 500;
+                                    color: #111111;
+                                ">
+                                New Arrival
+                            </h2>
+
+
+                            <p style="
+                                    margin: 15px 0 0;
+                                    padding: 0;
+                                    font-size: 15px;
+                                    line-height: 1.7;
+                                    color: #666666;
+                                ">
+                                Something new just dropped at StyleHub.
+                                Take a look at our latest arrival.
+                            </p>
+
+                        </td>
+
+                    </tr>
+
+
+                    <!-- ================================= -->
+                    <!-- PRODUCT IMAGE -->
+                    <!-- ================================= -->
+
+                    {% if primary_image and primary_image.image %}
+
+                    <tr>
+
+                        <td align="center" style="
+                                padding: 20px 30px;
+                            ">
+
+                            <img src="{{ primary_image.image.url }}" alt="{{ product.name }}" width="540" style="
+                                    display: block;
+                                    width: 100%;
+                                    max-width: 540px;
+                                    height: auto;
+                                    border: 0;
+                                    outline: none;
+                                    text-decoration: none;
+                                ">
+
+                        </td>
+
+                    </tr>
+
+                    {% endif %}
+
+
+                    <!-- ================================= -->
+                    <!-- PRODUCT INFORMATION -->
+                    <!-- ================================= -->
+
+                    <tr>
+
+                        <td align="center" style="
+                                padding: 20px 30px 40px;
+                            ">
+
+
+                            <!-- Product Name -->
+
+                            <h3 style="
+                                    margin: 0 0 12px;
+                                    padding: 0;
+                                    font-size: 25px;
+                                    line-height: 1.4;
+                                    font-weight: 500;
+                                    color: #111111;
+                                ">
+                                {{ product.name }}
+                            </h3>
+
+
+                            <!-- Price -->
+
+                            <p style="
+                                    margin: 0 0 28px;
+                                    padding: 0;
+                                    font-size: 18px;
+                                    line-height: 1.5;
+                                    color: #333333;
+                                ">
+                                PKR {{ product.display_price }}
+                            </p>
+
+
+                            <!-- ================================= -->
+                            <!-- SHOP NOW BUTTON -->
+                            <!-- ================================= -->
+
+                            <table cellpadding="0" cellspacing="0" border="0">
+
+                                <tr>
+
+                                    <td align="center" style="
+                                            background-color: #111111;
+                                        ">
+
+                                        <a href="{{ product_url }}" target="_blank" style="
+                                                display: inline-block;
+                                                padding: 16px 38px;
+                                                font-size: 13px;
+                                                line-height: 1;
+                                                font-weight: bold;
+                                                letter-spacing: 1.5px;
+                                                color: #ffffff;
+                                                text-decoration: none;
+                                            ">
+                                            SHOP NOW
+                                        </a>
+
+                                    </td>
+
+                                </tr>
+
+                            </table>
+
+                        </td>
+
+                    </tr>
+
+
+                    <!-- ================================= -->
+                    <!-- FOOTER -->
+                    <!-- ================================= -->
+
+                    <tr>
+
+                        <td align="center" style="
+                                padding: 30px 25px;
+                                background-color: #fafafa;
+                                border-top: 1px solid #eeeeee;
+                            ">
+
+
+                            <p style="
+                                    margin: 0 0 12px;
+                                    padding: 0;
+                                    font-size: 12px;
+                                    line-height: 1.6;
+                                    color: #888888;
+                                ">
+                                You're receiving this email because
+                                you subscribed to StyleHub updates.
+                            </p>
+
+
+                            <!-- ================================= -->
+                            <!-- UNSUBSCRIBE -->
+                            <!-- ================================= -->
+
+                            <a href="{{ unsubscribe_url }}" target="_blank" style="
+                                    font-size: 12px;
+                                    line-height: 1.5;
+                                    color: #555555;
+                                    text-decoration: underline;
+                                ">
+                                Unsubscribe from StyleHub emails
+                            </a>
+
+
+                            <p style="
+                                    margin: 18px 0 0;
+                                    padding: 0;
+                                    font-size: 11px;
+                                    line-height: 1.5;
+                                    color: #aaaaaa;
+                                ">
+                                © StyleHub
+                            </p>
+
+                        </td>
+
+                    </tr>
+
+
+                </table>
+
+                <!-- End Email Container -->
+
+
+            </td>
+
+        </tr>
+
+    </table>
+
+    <!-- End Main Background -->
+
+</body>
+
+</html>

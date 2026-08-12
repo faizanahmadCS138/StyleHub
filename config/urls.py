@@ -44,6 +44,12 @@ urlpatterns = [
 
     path('', include('apps.cart.urls', namespace='cart')),
     path('orders/', include('apps.orders.urls', namespace='orders')),
+
+
+    path(
+        "promotions/",
+        include("apps.promotions.urls", namespace='promotions')
+    ),
 ]
 
 # ── Debug Toolbar (development only) ──────────────────────────────

@@ -1,3 +1,4 @@
+# from colorama import winterm
 from .models import Cart, CartItem
 from apps.catalog.models import ProductVariant
 from django.urls import reverse
@@ -23,152 +24,158 @@ class StyleHubCartManager:
                 self.cart.session_key = self.session.session_key
                 self.cart.save()
         else:
-            # Initialize Session Cart dict for guests
-            session_cart = self.session.get('cart')
-            if session_cart is None:
-                session_cart = self.session['cart'] = {}
-            self.session_cart = session_cart
+            # Load or create DB Cart for guest using session key
+            self.cart, _ = Cart.objects.get_or_create(
+                session_key=self.session.session_key,
+                user=None,
+            )
 
-    def merge_session_cart(self, user=None):
+    def merge_session_cart(self, user=None, guest_session_key=None):
         """
-        Transfers items from guest session storage into the user's database cart upon login.
+        Merge the guest DB cart into the authenticated user's DB cart.
         """
+
         target_user = user or self.user
+
         if not target_user or not target_user.is_authenticated:
             return
 
-        # Fetch or create the user's DB cart
-        db_cart, _ = Cart.objects.get_or_create(user=target_user)
+        # Use the OLD guest session key captured before login().
+        session_key = guest_session_key or self.session.session_key
 
-        # 1. Merge items from session dict (if any exist)
-        session_cart = self.session.get('cart', {})
-        if session_cart:
-            for variant_id_str, item_data in session_cart.items():
-                try:
-                    variant = ProductVariant.objects.get(id=int(variant_id_str))
-                    qty = item_data.get('quantity', 1)
+        if not session_key:
+            return
 
-                    item, created = CartItem.objects.get_or_create(cart=db_cart, variant=variant)
-                    if created:
-                        item.quantity = qty
-                    else:
-                        item.quantity += qty
+        # Find guest cart using the OLD session key
+        guest_cart = Cart.objects.filter(
+            session_key=session_key,
+            user=None
+        ).first()
 
-                    if item.quantity > variant.stock_quantity:
-                        item.quantity = variant.stock_quantity
+        if not guest_cart:
+            return
 
-                    item.save()
-                except (ProductVariant.DoesNotExist, ValueError):
-                    continue
+        # Get/create logged-in user's cart
+        user_cart, _ = Cart.objects.get_or_create(
+            user=target_user
+        )
 
-            # Clear session cart after merging
-            self.session['cart'] = {}
-            self.session.modified = True
+        # Get guest cart items
+        guest_items = (
+            CartItem.objects
+            .filter(cart=guest_cart)
+            .select_related('variant')
+        )
+
+        for guest_item in guest_items:
+
+            user_item, created = CartItem.objects.get_or_create(
+                cart=user_cart,
+                variant=guest_item.variant
+            )
+
+        if created:
+            user_item.quantity = guest_item.quantity
+        else:
+            user_item.quantity += guest_item.quantity
+
+        # Don't exceed stock
+        if user_item.quantity > guest_item.variant.stock_quantity:
+            user_item.quantity = guest_item.variant.stock_quantity
+
+        user_item.save()
+
+        # Delete old guest cart
+        guest_cart.delete()
+
+        # Update manager's cart
+        self.cart = user_cart
 
     def add(self, variant_id, quantity=1, override_quantity=False):
-        print("===================")
-        print(self.user)
-        print(self.user.is_authenticated)
-        print(self.request.user)    
-        print("===================")
-        """Add a variant or update its quantity."""
-        variant = ProductVariant.objects.get(id=variant_id)
-        variant_id_str = str(variant_id)
+
+        variant = ProductVariant.objects.get(
+            id=variant_id
+        )
+
         if quantity > variant.stock_quantity:
-            raise ValueError(f"Only {variant.stock_quantity} left in stock.")
-        
-        # 1. DB Cart (Authenticated Users)
-        if self.user.is_authenticated:
-            item, created = CartItem.objects.get_or_create(cart=self.cart, variant=variant)
-            if created:
+            raise ValueError(
+                f"Only {variant.stock_quantity} left in stock."
+            )
+
+        item, created = CartItem.objects.get_or_create(
+            cart=self.cart,
+            variant=variant
+        )
+
+        if created:
+            item.quantity = quantity
+
+        else:
+            if override_quantity:
                 item.quantity = quantity
             else:
-                if override_quantity:
-                    item.quantity = quantity
-                else:
-                    item.quantity += quantity
-            item.save()
-            return item
+                item.quantity += quantity
 
-        # 2. Session Cart (Guest Users)
-        else:
-            if variant_id_str in self.session_cart:
-                if override_quantity:
-                    self.session_cart[variant_id_str]['quantity'] = quantity
-                else:
-                    self.session_cart[variant_id_str]['quantity'] += quantity
-            else:
-                self.session_cart[variant_id_str] = {
-                    'quantity': quantity,
-                    'price': str(variant.product.display_price + variant.additional_price)
-                }
-            self.session.modified = True
-            return self.session_cart[variant_id_str]
+        if item.quantity > variant.stock_quantity:
+                item.quantity = variant.stock_quantity
 
+        item.save()
+
+        return item
+    
     def remove(self, variant_id):
-        """Remove a variant from the cart."""
-        variant_id_str = str(variant_id)
 
-        if self.user.is_authenticated:
-            CartItem.objects.filter(cart=self.cart, variant_id=variant_id).delete()
-        else:
-            if variant_id_str in self.session_cart:
-                del self.session_cart[variant_id_str]
-                self.session.modified = True
+        CartItem.objects.filter(
+            cart=self.cart,
+            variant_id=variant_id
+        ).delete()
 
     def get_items(self):
-        """Returns a standardized list of item dictionaries for views/APIs."""
+        """Returns a standardized list of cart items."""
+
         items = []
 
-        if self.user.is_authenticated:
-            cart_items = CartItem.objects.filter(cart=self.cart).select_related(
-                'variant__product', 'variant__size'
+        cart_items = (
+            CartItem.objects
+            .filter(cart=self.cart)
+            .select_related(
+            'variant__product',
+            'variant__size'
             )
-            for item in cart_items:
-                product = item.variant.product
-                primary_img = product.primary_image
-                items.append({
-                    'id': item.id,
-                    'variant_id': item.variant.id,
-                    'product_slug': product.slug,
-                    'product_url': reverse('catalog:product-detail', kwargs={'slug': product.slug}),
-                    'product_name': product.name,
-                    'size': item.variant.size.name if item.variant.size else '',
-                    'color': item.variant.color,
-                    'price': float(item.unit_price),
-                    'quantity': item.quantity,
-                    'subtotal': float(item.subtotal),
-                    'image': primary_img.image.url if primary_img else '/static/images/placeholder.jpg',
-                })
-        else:
-            variant_ids = self.session_cart.keys()
-            variants = ProductVariant.objects.filter(id__in=variant_ids).select_related('product', 'size')
-            variant_map = {str(v.id): v for v in variants}
+        )
 
-            for v_id, data in self.session_cart.items():
-                variant = variant_map.get(v_id)
-                if not variant:
-                    continue
-                product = variant.product
-                primary_img = product.primary_image
-                unit_price = float(product.display_price + variant.additional_price)
-                subtotal = unit_price * data['quantity']
+        for item in cart_items:
 
-                items.append({
-                    'id': v_id,
-                    'variant_id': variant.id,
-                    'product_slug': product.slug,
-                    'product_url': reverse('catalog:product-detail', kwargs={'slug': product.slug}),
-                    'product_name': product.name,
-                    'size': variant.size.name if variant.size else '',
-                    'color': variant.color,
-                    'price': unit_price,
-                    'quantity': data['quantity'],
-                    'subtotal': subtotal,
-                    'image': primary_img.image.url if primary_img else '/static/images/placeholder.jpg',
-                })
+            variant = item.variant
+            product = variant.product
+            primary_img = product.primary_image
 
-        return items
+            items.append({
+                'id': item.id,
+                'variant_id': variant.id,
+                'product_slug': product.slug,
+                'product_url': reverse(
+                    'catalog:product-detail',
+                    kwargs={'slug': product.slug}
+                ),
+                'product_name': product.name,
+                'size': (
+                    variant.size.name
+                    if variant.size
+                    else ''
+                ),
+                'color': variant.color,
+                'price': float(item.unit_price),
+                'quantity': item.quantity,
+                'subtotal': float(item.subtotal),
+                'image': (
+                    primary_img.image.url
+                    if primary_img
+                    else '/static/images/placeholder.jpg'
+                ),
+            })
+
+        return items    
 
     def get_summary(self):
         """Returns total item count and order subtotal."""
@@ -181,11 +188,8 @@ class StyleHubCartManager:
         }
 
     def clear(self):
-        """Empties the cart."""
-        if self.user.is_authenticated:
-            CartItem.objects.filter(cart=self.cart).delete()
-        else:
-            self.session['cart'] = {}
-            self.session.modified = True
+        CartItem.objects.filter(
+            cart=self.cart
+        ).delete()
 
     

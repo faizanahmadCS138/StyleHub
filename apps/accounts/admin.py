@@ -11,7 +11,7 @@ from .models import Address, CustomUser
 class AddressInline(admin.TabularInline):
     model  = Address
     extra  = 0
-    fields = ('label', 'full_name', 'street', 'city', 'province', 'country', 'is_default')
+    fields = ('label', 'full_name', 'address_line', 'city', 'province', 'country', 'is_default')
 
 
 # ─────────────────────────────────────────────────────────────

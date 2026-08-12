@@ -1,5 +1,5 @@
 from django.contrib import messages
-from django.shortcuts import redirect
+from django.shortcuts import redirect, get_object_or_404
 
 from .forms import NewsletterForm
 from .models import NewsletterSubscriber
@@ -47,3 +47,27 @@ def subscribe(request):
         )
 
     return redirect(request.META.get('HTTP_REFERER', '/'))
+
+
+
+def unsubscribe(request, token):
+    subscriber = get_object_or_404(
+        NewsletterSubscriber,
+        unsubscribe_token=token
+    )
+
+    if subscriber.is_active:
+        subscriber.is_active = False
+        subscriber.save(update_fields=['is_active'])
+
+        messages.success(
+            request,
+            "You have been unsubscribed from StyleHub updates."
+        )
+    else:
+        messages.info(
+            request,
+            "You are already unsubscribed from StyleHub updates."
+        )
+
+    return redirect('/')

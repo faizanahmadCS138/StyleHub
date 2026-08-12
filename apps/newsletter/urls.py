@@ -7,4 +7,9 @@ app_name = 'newsletter'
 
 urlpatterns = [
     path('subscribe/', views.subscribe, name='subscribe'),
+    path(
+        'unsubscribe/<uuid:token>/',
+        views.unsubscribe,
+        name='unsubscribe'
+    ),
 ]
