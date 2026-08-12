@@ -36,7 +36,7 @@
       <div class="pdp-gallery-grid">
         {% if images %}
           {% for img in images %}
-            <div class="pdp-gallery-item">
+            <div class="pdp-gallery-item" data-color="{{ img.color|default:''|lower }}">
               <img src="{{ img.image.url }}" alt="{{ product.name }}" class="pdp-gallery-img" />
             </div>
           {% endfor %}
@@ -77,7 +77,7 @@
             <div class="pdp-color-name" id="selectedColorName">{{ colors.0.name|title }}</div>
             <div class="pdp-color-swatches">
               {% for color in colors %}
-                <span class="pdp-color-dot {% if forloop.first %}active{% endif %}" style="background-color: {{ color.hex }};" data-color="{{ color.name }}" title="{{ color.name }}"></span>
+                <span class="pdp-color-dot {% if forloop.first %}active{% endif %}" style="background-color: {{ color.hex }};" data-color="{{ color.name }}" data-image-url="{{ color.image_url }}" title="{{ color.name }}"></span>
               {% endfor %}
             </div>
           </div>

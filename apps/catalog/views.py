@@ -216,10 +216,43 @@ def product_detail_view(request, slug):
     colors_map = {}
     for v in variants:
         if v.color and v.color.strip() not in colors_map:
-            colors_map[v.color.strip()] = {
-                'name': v.color.strip(),
+            color_name = v.color.strip()
+            matching_img = (
+                product.images.filter(color__iexact=color_name, is_primary=True).first()
+                or product.images.filter(color__iexact=color_name).first()
+            )
+            img_url = matching_img.image.url if (matching_img and matching_img.image) else ''
+            colors_map[color_name] = {
+                'name': color_name,
                 'hex': v.color_hex or '#222222',
+                'image_url': img_url,
             }
+
+    colors_list = list(colors_map.values())
+    requested_color = request.GET.get('color', '').strip()
+
+    # If requested color exists in product colors, re-order colors_list so requested_color is first
+    selected_color = None
+    if requested_color:
+        for idx, c in enumerate(colors_list):
+            if c['name'].lower() == requested_color.lower():
+                selected_color = c['name']
+                colors_list.insert(0, colors_list.pop(idx))
+                break
+
+    if not selected_color and colors_list:
+        selected_color = colors_list[0]['name']
+
+    # 2. Images gallery - order so selected_color images appear first
+    all_images = list(product.images.all().order_by('display_order'))
+    if selected_color:
+        color_imgs = [img for img in all_images if img.color and img.color.strip().lower() == selected_color.lower()]
+        other_imgs = [img for img in all_images if img not in color_imgs]
+        images = color_imgs + other_imgs
+    else:
+        images = all_images
+
+    primary_image = images[0] if images else product.primary_image
 
     # 5. Related products
     related_products = Product.objects.filter(
@@ -245,7 +278,8 @@ def product_detail_view(request, slug):
         'images'          : images,
         'primary_image'   : primary_image,
         'sizes'           : sorted_sizes,
-        'colors'          : list(colors_map.values()),
+        'colors'          : colors_list,
+        'selected_color'  : selected_color,
         'related_products': related_products,
         'variants_json'   : json.dumps(variants_data),
         # Reviews

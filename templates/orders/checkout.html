@@ -228,9 +228,9 @@
 
                 <div class="item-thumbnail-wrapper">
 
-                    {% if item.variant.product.primary_image %}
+                    {% if item.variant.variant_image %}
 
-                    <img src="{{ item.variant.product.primary_image.image.url }}" alt="{{ item.variant.product.name }}"
+                    <img src="{{ item.variant.variant_image.image.url }}" alt="{{ item.variant.product.name }}"
                         class="item-thumbnail">
 
                     {% else %}

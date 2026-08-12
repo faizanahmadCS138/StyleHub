@@ -13,7 +13,7 @@ from .models import Category, Product, ProductImage, ProductVariant, Tag, Size
 class ProductImageInline(admin.TabularInline):
     model   = ProductImage
     extra   = 1
-    fields  = ('image', 'image_preview','alt_text', 'is_primary', 'display_order')
+    fields  = ('image', 'image_preview', 'color', 'alt_text', 'is_primary', 'display_order')
     readonly_fields = ('image_preview',)
 
     def image_preview(self, obj):

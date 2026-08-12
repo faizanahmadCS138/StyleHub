@@ -172,19 +172,10 @@ def create_order_from_cart(
         total=total,
     )
     if discount and user and user.is_authenticated and payment_method == 'cod':
-        DiscountUsage.objects.create(
+        DiscountUsage.objects.get_or_create(
             discount=discount,
             user=user
         )
-    if already_used:
-        raise CheckoutError(
-            'You have already used this discount code.'
-        )
-
-    DiscountUsage.objects.create(
-        discount=discount,
-        user=user
-    )
 
     # ---------------------------------------------------------
     # CREATE ORDER ITEMS

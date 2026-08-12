@@ -36,11 +36,13 @@ document.addEventListener('DOMContentLoaded', function () {
         if (activeBtn) activeBtn.classList.add('active');
     }
 
-    // ── Color Swatches Click & Hover Switcher ────────────────
+    // ── Color Swatches Click Switcher ────────────────
     const colorDots = document.querySelectorAll('.color-swatch-dot');
     colorDots.forEach(dot => {
         dot.addEventListener('click', function (e) {
             e.preventDefault();
+            e.stopPropagation();
+
             const productId = this.getAttribute('data-product-id');
             const imgEl = document.getElementById('product-img-' + productId);
 
@@ -51,14 +53,48 @@ document.addEventListener('DOMContentLoaded', function () {
             }
             this.classList.add('active');
 
-            // Swap image if secondary image available or trigger subtle effect
-            if (imgEl && imgEl.dataset.secondary) {
+            // Swap image to specific color image if available, else toggle secondary
+            const targetImageUrl = this.dataset.imageUrl;
+            const selectedColorName = this.dataset.color;
+            if (imgEl && targetImageUrl) {
+                imgEl.src = targetImageUrl;
+            } else if (imgEl && imgEl.dataset.secondary) {
                 if (imgEl.src === imgEl.dataset.primary) {
                     imgEl.src = imgEl.dataset.secondary;
                 } else {
                     imgEl.src = imgEl.dataset.primary;
                 }
             }
+
+            // Update card links to include ?color=
+            if (selectedColorName) {
+                const productCard = this.closest('.product-card');
+                if (productCard) {
+                    const cardLinks = productCard.querySelectorAll('a.product-card-image-wrap, a.product-card-title, a[href*="/products/"]');
+                    cardLinks.forEach(link => {
+                        try {
+                            const url = new URL(link.href, window.location.origin);
+                            url.searchParams.set('color', selectedColorName);
+                            link.href = url.pathname + url.search;
+                        } catch (err) {}
+                    });
+                }
+            }
         });
+    });
+
+    // Sync initial card links for active swatch dots
+    document.querySelectorAll('.product-card').forEach(card => {
+        const activeDot = card.querySelector('.color-swatch-dot.active');
+        if (activeDot && activeDot.dataset.color) {
+            const cardLinks = card.querySelectorAll('a.product-card-image-wrap, a.product-card-title, a[href*="/products/"]');
+            cardLinks.forEach(link => {
+                try {
+                    const url = new URL(link.href, window.location.origin);
+                    url.searchParams.set('color', activeDot.dataset.color);
+                    link.href = url.pathname + url.search;
+                } catch (err) {}
+            });
+        }
     });
 });

@@ -244,13 +244,13 @@ Track Order #{{ order.order_number }} — StyleHub
 
             <div class="track-item-info">
 
-                {% if item.variant.product.primary_image %}
+                {% if item.variant.variant_image %}
 
-                <img src="{{ item.variant.product.primary_image.image.url }}" 
+                <img src="{{ item.variant.variant_image.image.url }}" 
                     alt="{{ item.variant.product.name }}"
                     class="product-card-img" 
                     id="product-img-{{ item.variant.product.id }}"
-                    data-primary="{{ item.variant.product.primary_image.image.url }}" 
+                    data-primary="{{ item.variant.variant_image.image.url }}" 
                     {% if item.variant.product.secondary_image %}
                     data-secondary="{{ item.variant.product.secondary_image.image.url }}" 
                     {% endif %}

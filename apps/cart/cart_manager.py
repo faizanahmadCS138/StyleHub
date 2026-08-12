@@ -148,7 +148,7 @@ class StyleHubCartManager:
 
             variant = item.variant
             product = variant.product
-            primary_img = product.primary_image
+            variant_img = variant.variant_image
 
             items.append({
                 'id': item.id,
@@ -157,7 +157,7 @@ class StyleHubCartManager:
                 'product_url': reverse(
                     'catalog:product-detail',
                     kwargs={'slug': product.slug}
-                ),
+                ) + (f"?color={variant.color.strip()}" if variant.color else ""),
                 'product_name': product.name,
                 'size': (
                     variant.size.name
@@ -169,8 +169,8 @@ class StyleHubCartManager:
                 'quantity': item.quantity,
                 'subtotal': float(item.subtotal),
                 'image': (
-                    primary_img.image.url
-                    if primary_img
+                    variant_img.image.url
+                    if (variant_img and variant_img.image)
                     else '/static/images/placeholder.jpg'
                 ),
             })

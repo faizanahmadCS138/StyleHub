@@ -333,8 +333,8 @@ class CheckoutView(View):
             )
 
             # Discount has now actually been used
-            if order.discount:
-                DiscountUsage.objects.create(
+            if order.discount and request.user.is_authenticated:
+                DiscountUsage.objects.get_or_create(
                     discount=order.discount,
                     user=request.user
                 )

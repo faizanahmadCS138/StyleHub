@@ -92,8 +92,15 @@
             {% for product in page_obj %}
                 <div class="product-card">
                     <!-- Product Image Container -->
-                    <a href="{% url 'catalog:product-detail' slug=product.slug %}" class="product-card-image-wrap">
-                        {% if product.primary_image %}
+                    <a href="{% url 'catalog:product-detail' slug=product.slug %}{% if product.color_swatches %}?color={{ product.color_swatches.0.color|urlencode }}{% endif %}" class="product-card-image-wrap">
+                        {% if product.color_swatches.0.image_url %}
+                            <img src="{{ product.color_swatches.0.image_url }}" 
+                                 alt="{{ product.name }}" 
+                                 class="product-card-img" 
+                                 id="product-img-{{ product.id }}"
+                                 data-primary="{{ product.color_swatches.0.image_url }}"
+                                 {% if product.secondary_image %}data-secondary="{{ product.secondary_image.image.url }}"{% endif %}>
+                        {% elif product.primary_image %}
                             <img src="{{ product.primary_image.image.url }}" 
                                  alt="{{ product.name }}" 
                                  class="product-card-img" 
@@ -114,7 +121,7 @@
                     </button>
                     <!-- Product Card Info -->
                     <div class="product-card-info">
-                        <a href="{% url 'catalog:product-detail' slug=product.slug %}" class="product-card-title">
+                        <a href="{% url 'catalog:product-detail' slug=product.slug %}{% if product.color_swatches %}?color={{ product.color_swatches.0.color|urlencode }}{% endif %}" class="product-card-title">
                             {{ product.name }}
                         </a>
 
@@ -148,6 +155,7 @@
                                           style="background-color: {{ swatch.color_hex }};" 
                                           data-product-id="{{ product.id }}"
                                           data-color="{{ swatch.color }}"
+                                          data-image-url="{{ swatch.image_url }}"
                                           title="{{ swatch.color }}"></span>
                                 {% endfor %}
                             </div>

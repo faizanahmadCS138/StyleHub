@@ -19,9 +19,18 @@ document.addEventListener('DOMContentLoaded', function () {
         maximumFractionDigits: 0,
     });
 
+    // Check if color query param is in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const initialColorParam = urlParams.get('color');
+
     // ── 1. Color Selection ───────────────────────────────────
     if (colorDots.length > 0) {
-        selectColor(colorDots[0]);
+        let initialDot = colorDots[0];
+        if (initialColorParam) {
+            const matchedDot = Array.from(colorDots).find(d => d.dataset.color?.toLowerCase() === initialColorParam.toLowerCase());
+            if (matchedDot) initialDot = matchedDot;
+        }
+        selectColor(initialDot);
     }
 
     colorDots.forEach(dot => {
@@ -36,6 +45,42 @@ document.addEventListener('DOMContentLoaded', function () {
         selectedColor = dot.dataset.color;
         if (colorNameSpan) {
             colorNameSpan.textContent = selectedColor.charAt(0).toUpperCase() + selectedColor.slice(1);
+        }
+
+        const colorLower = (selectedColor || '').trim().toLowerCase();
+        const galleryItems = document.querySelectorAll('.pdp-gallery-grid .pdp-gallery-item');
+        
+        let hasColorMatches = false;
+        galleryItems.forEach(item => {
+            const itemColor = (item.dataset.color || '').trim().toLowerCase();
+            if (itemColor && itemColor === colorLower) {
+                hasColorMatches = true;
+            }
+        });
+
+        // Filter gallery items: show matching color items + uncolored items. Hide other color items.
+        galleryItems.forEach(item => {
+            const itemColor = (item.dataset.color || '').trim().toLowerCase();
+
+            if (hasColorMatches) {
+                if (itemColor === colorLower || itemColor === '') {
+                    item.style.display = '';
+                } else {
+                    item.style.display = 'none';
+                }
+            } else {
+                item.style.display = '';
+            }
+        });
+
+        // Swap main PDP gallery image if a specific color image URL is attached
+        const imageUrl = dot.dataset.imageUrl;
+        if (imageUrl) {
+            const firstVisibleImg = document.querySelector('.pdp-gallery-grid .pdp-gallery-item:not([style*="display: none"]) .pdp-gallery-img') ||
+                document.querySelector('.pdp-gallery-grid .pdp-gallery-img');
+            if (firstVisibleImg) {
+                firstVisibleImg.src = imageUrl;
+            }
         }
 
         updateSizeAvailability();

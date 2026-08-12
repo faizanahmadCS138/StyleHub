@@ -162,15 +162,22 @@ class Product(TimeStampedModel):
 
     @property
     def color_swatches(self):
-        """Returns list of distinct color dicts with name & hex code."""
+        """Returns list of distinct color dicts with name, hex code & associated primary image URL."""
         swatches = []
         seen = set()
         for variant in self.variants.filter(is_active=True):
-            if variant.color and variant.color.strip().lower() not in seen:
-                seen.add(variant.color.strip().lower())
+            color_name = variant.color.strip() if variant.color else ''
+            if color_name and color_name.lower() not in seen:
+                seen.add(color_name.lower())
+                matching_img = (
+                    self.images.filter(color__iexact=color_name, is_primary=True).first()
+                    or self.images.filter(color__iexact=color_name).first()
+                )
+                img_url = matching_img.image.url if (matching_img and matching_img.image) else (self.primary_image.image.url if (self.primary_image and self.primary_image.image) else '')
                 swatches.append({
-                    'color': variant.color.strip(),
+                    'color': color_name,
                     'color_hex': variant.color_hex or '#222222',
+                    'image_url': img_url,
                 })
         return swatches
 
@@ -192,6 +199,7 @@ class ProductImage(models.Model):
     product       = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='images')
     image         = models.ImageField(upload_to='products/')
     alt_text      = models.CharField(max_length=200, blank=True)
+    color         = models.CharField(max_length=50, blank=True, default='', help_text="Color name associated with this image, e.g. Blue, Black")
     is_primary    = models.BooleanField(default=False)
     display_order = models.PositiveIntegerField(default=0)
 
@@ -202,9 +210,14 @@ class ProductImage(models.Model):
         return f'Image for {self.product.name}'
 
     def save(self, *args, **kwargs):
-        # Ensure only one primary image per product
+        # Ensure only one primary image per color (or uncolored group) per product
         if self.is_primary:
-            ProductImage.objects.filter(product=self.product, is_primary=True).update(is_primary=False)
+            color_str = self.color.strip() if self.color else ''
+            ProductImage.objects.filter(
+                product=self.product,
+                color__iexact=color_str,
+                is_primary=True
+            ).exclude(pk=self.pk).update(is_primary=False)
         super().save(*args, **kwargs)
 
 
@@ -258,6 +271,19 @@ class ProductVariant(models.Model):
         if self.color:
             parts.append(self.color)
         return ' / '.join(parts)
+
+    @property
+    def variant_image(self):
+        """Returns the primary image matching this variant's color, or fallback to product primary image."""
+        if self.color:
+            color_name = self.color.strip()
+            matching_img = (
+                self.product.images.filter(color__iexact=color_name, is_primary=True).first()
+                or self.product.images.filter(color__iexact=color_name).first()
+            )
+            if matching_img and matching_img.image:
+                return matching_img
+        return self.product.primary_image
 
     def save(self, *args, **kwargs):
         if not self.sku_suffix:
