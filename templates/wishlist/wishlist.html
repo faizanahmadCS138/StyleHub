@@ -77,19 +77,7 @@
                             {% endif %}
                         </div>
 
-                        <!-- Color Swatches from Backend -->
-                        {% if product.color_swatches %}
-                            <div class="color-swatches-list">
-                                {% for swatch in product.color_swatches %}
-                                    <span class="color-swatch-dot {% if forloop.first %}active{% endif %}" 
-                                          style="background-color: {{ swatch.color_hex }};" 
-                                          data-product-id="{{ product.id }}"
-                                          data-color="{{ swatch.color }}"
-                                          data-image-url="{{ swatch.image_url }}"
-                                          title="{{ swatch.color }}"></span>
-                                {% endfor %}
-                            </div>
-                        {% endif %}
+                        
                     </div>
                 </div>
                 {% endwith %}
