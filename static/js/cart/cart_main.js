@@ -93,4 +93,55 @@
     }
 
     document.addEventListener('DOMContentLoaded', loadCart);
+
+    // Event delegation for dynamically rendered items
+    document.addEventListener('click', async (e) => {
+        // Handle Delete item
+        const removeBtn = e.target.closest('[data-remove-item]');
+        if (removeBtn) {
+            e.preventDefault();
+            const variantId = removeBtn.getAttribute('data-remove-item');
+            if (variantId && typeof removeCartItem === 'function') {
+                try {
+                    const cart = await removeCartItem(cartApiUrl, variantId);
+                    updateUI(cart);
+                } catch (err) {
+                    console.error("Failed to remove item", err);
+                }
+            }
+            return;
+        }
+
+        // Handle Quantity change
+        const qtyBtn = e.target.closest('.qty-btn');
+        if (qtyBtn) {
+            e.preventDefault();
+            const variantId = qtyBtn.getAttribute('data-variant-id');
+            const change = parseInt(qtyBtn.getAttribute('data-qty-change'), 10);
+            const qtyValSpan = qtyBtn.parentElement.querySelector('.qty-val');
+            
+            if (variantId && !isNaN(change) && qtyValSpan) {
+                let currentQty = parseInt(qtyValSpan.textContent, 10) || 1;
+                let newQty = currentQty + change;
+                
+                // Enforce Min 1, Max 5
+                if (newQty < 1) newQty = 1;
+                if (newQty > 5) newQty = 5;
+
+                if (newQty !== currentQty) {
+                    qtyValSpan.textContent = '...'; // loading state
+                    if (typeof updateCartItemQty === 'function') {
+                        try {
+                            const cart = await updateCartItemQty(cartApiUrl, variantId, newQty, true); // true for override
+                            updateUI(cart);
+                        } catch (err) {
+                            console.error("Failed to update qty", err);
+                        }
+                    }
+                }
+            }
+            return;
+        }
+    });
+
 })();

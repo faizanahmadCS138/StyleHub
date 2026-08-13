@@ -10,8 +10,9 @@ from apps.promotions.services import calculate_discount
 class CheckoutError(Exception):
     """Raised when cart is empty, inventory is unavailable,
     or discount code is invalid."""
-    pass
-
+    def __init__(self, message, error_item=None):
+        super().__init__(message)
+        self.error_item = error_item
 
 @transaction.atomic
 def create_order_from_cart(
@@ -48,7 +49,8 @@ def create_order_from_cart(
         if item.variant is None or not item.variant.is_active:
             raise CheckoutError(
                 f'{item.variant.product.name if item.variant else "An item"} '
-                f'is no longer available.'
+                f'is no longer available.',
+                error_item=item
             )
 
         if item.quantity > item.variant.stock_quantity:
@@ -56,7 +58,8 @@ def create_order_from_cart(
                 f'Only {item.variant.stock_quantity} remaining in stock '
                 f'for {item.variant.product.name} '
                 f'({item.variant.size.name if item.variant.size else ""} '
-                f'/ {item.variant.color}).'
+                f'/ {item.variant.color}).',
+                error_item=item
             )
 
     # ---------------------------------------------------------
@@ -171,6 +174,7 @@ def create_order_from_cart(
         shipping_cost=shipping_cost,
         total=total,
     )
+    # Record discount usage for COD immediately (Stripe records it after webhook payment confirmation)
     if discount and user and user.is_authenticated and payment_method == 'cod':
         DiscountUsage.objects.get_or_create(
             discount=discount,
@@ -178,7 +182,7 @@ def create_order_from_cart(
         )
 
     # ---------------------------------------------------------
-    # CREATE ORDER ITEMS
+    # CREATE ORDER ITEMS (snapshot — always, for both COD & Stripe)
     # ---------------------------------------------------------
 
     order_items = []
@@ -211,20 +215,20 @@ def create_order_from_cart(
             )
         )
 
-        # Deduct inventory
-        variant.stock_quantity -= item.quantity
-
-        variant.save(
-            update_fields=['stock_quantity']
-        )
-
     # Bulk insert order items
     OrderItem.objects.bulk_create(order_items)
 
     # ---------------------------------------------------------
-    # EMPTY CART
+    # COD ONLY: Deduct inventory + empty cart immediately.
+    # For Stripe, this is deferred to fulfill_paid_order() which
+    # runs AFTER the Stripe webhook confirms payment.
     # ---------------------------------------------------------
 
-    cart.items.all().delete()
+    if payment_method == 'cod':
+        for item in items:
+            item.variant.stock_quantity -= item.quantity
+            item.variant.save(update_fields=['stock_quantity'])
+
+        cart.items.all().delete()
 
     return order

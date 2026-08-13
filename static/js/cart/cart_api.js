@@ -32,7 +32,7 @@ async function fetchCart(apiUrl) {
 }
 
 // Update Item Quantity
-async function updateCartItemQty(apiUrl, variantId, quantity) {
+async function updateCartItemQty(apiUrl, variantId, quantity, overrideQuantity = true) {
     try {
         const response = await fetch(apiUrl, {
             method: 'POST',
@@ -42,7 +42,7 @@ async function updateCartItemQty(apiUrl, variantId, quantity) {
                 'X-CSRFToken': getCsrfToken(),
             },
             credentials: 'same-origin',
-            body: JSON.stringify({ variant_id: variantId, quantity }),
+            body: JSON.stringify({ variant_id: variantId, quantity, override_quantity: overrideQuantity }),
         });
         const data = await response.json();
         return normalizeCartPayload(data);

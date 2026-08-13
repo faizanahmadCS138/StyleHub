@@ -21,6 +21,33 @@
         <form method="POST" id="checkout-form">
             {% csrf_token %}
 
+            {% if checkout_error_item %}
+            <div class="checkout-error-product" style="border: 1px solid #d32f2f; border-radius: 8px; padding: 15px; margin-bottom: 25px; background: #ffebee;">
+                <h3 style="color: #c62828; margin-top: 0; font-size: 16px; margin-bottom: 10px;">
+                    <i class="fa-solid fa-triangle-exclamation" style="margin-right: 5px;"></i> Stock Issue
+                </h3>
+                <div style="display: flex; gap: 15px; align-items: center;">
+                    {% if checkout_error_item.variant.variant_image %}
+                        <img src="{{ checkout_error_item.variant.variant_image.image.url }}" alt="{{ checkout_error_item.variant.product.name }}" style="width: 70px; height: 90px; object-fit: cover; border-radius: 4px;">
+                    {% endif %}
+                    <div>
+                        <strong style="display: block; font-size: 15px; color: #111;">{{ checkout_error_item.variant.product.name }}</strong>
+                        <span style="display: block; font-size: 13px; color: #555; margin-top: 4px;">Color: {{ checkout_error_item.variant.color }}</span>
+                        {% if checkout_error_item.variant.size %}
+                        <span style="display: block; font-size: 13px; color: #555;">Size: {{ checkout_error_item.variant.size.name }}</span>
+                        {% endif %}
+                        <div style="margin-top: 8px; font-weight: 600; color: #c62828;">
+                            {% if checkout_error_item.variant.is_active and checkout_error_item.variant.stock_quantity > 0 %}
+                                Only {{ checkout_error_item.variant.stock_quantity }} left in stock! (You requested {{ checkout_error_item.quantity }})
+                            {% else %}
+                                Currently Out of Stock.
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
             <!-- Contact Section -->
             <div class="section-title">
                 <span>Contact</span>
