@@ -52,6 +52,11 @@ class CheckoutView(View):
     def get(self, request):
         cart = _get_cart(request)
 
+        if request.GET.get('canceled'):
+            messages.info(request, "Payment was canceled. Your cart items are still saved.")
+            if request.user.is_authenticated:
+                Order.objects.filter(user=request.user, payment_method='stripe', payment_status='unpaid').delete()
+
         if not cart or not cart.items.exists():
             messages.warning(
                 request,
@@ -64,10 +69,12 @@ class CheckoutView(View):
         # ---------------------------------------------------------
 
         initial_data = {}
+        user_addresses = []
 
         if request.user.is_authenticated:
 
             user = request.user
+            user_addresses = list(user.addresses.all())
 
             initial_data = {
                 'email': user.email,
@@ -82,15 +89,30 @@ class CheckoutView(View):
 
             default_address = (
                 user.addresses
-                .filter(is_default=True)
+                .filter(is_primary=True)
                 .first()
-            )
+            ) or (user_addresses[0] if user_addresses else None)
 
             if default_address:
+                first_name = user.first_name
+                last_name = user.last_name
+                if (not first_name or not last_name) and default_address.full_name:
+                    name_parts = default_address.full_name.strip().split(' ', 1)
+                    if not first_name:
+                        first_name = name_parts[0]
+                    if not last_name and len(name_parts) > 1:
+                        last_name = name_parts[1]
+
+                address_str = default_address.street_address
+                if default_address.apartment and default_address.apartment not in address_str:
+                    address_str = f"{address_str}, {default_address.apartment}"
+
                 initial_data.update({
-                    'address': default_address.address_line,
+                    'first_name': first_name,
+                    'last_name': last_name,
+                    'address': address_str,
                     'city': default_address.city,
-                    'postal_code': default_address.postal_code,
+                    'phone': default_address.phone_number or initial_data['phone'],
                 })
 
         form = CheckoutForm(
@@ -163,17 +185,12 @@ class CheckoutView(View):
         context = {
             'form': form,
             'cart': cart,
-
+            'user_addresses': user_addresses,
             'shipping_cost': shipping_cost,
-
             'subtotal': subtotal,
-
             'discount': discount,
-
             'discount_amount': discount_amount,
-
             'discount_code': discount_code,
-
             'total': total,
         }
 
@@ -196,6 +213,8 @@ class CheckoutView(View):
             )
 
             return redirect('catalog:home')
+
+        user_addresses = list(request.user.addresses.all()) if request.user.is_authenticated else []
 
         # ---------------------------------------------------------
         # CHECKOUT FORM
@@ -262,6 +281,7 @@ class CheckoutView(View):
                 {
                     'form': form,
                     'cart': cart,
+                    'user_addresses': user_addresses,
                     'shipping_cost': shipping_cost,
                     'subtotal': subtotal,
                     'discount': discount,
@@ -342,6 +362,7 @@ class CheckoutView(View):
                     {
                         'form': form,
                         'cart': cart,
+                        'user_addresses': user_addresses,
                         'shipping_cost': shipping_cost,
                         'subtotal': subtotal,
                         'discount': discount,

@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Addresses — StyleHub{% endblock %}
+{% block content %}
+<div class="saved-addresses">
+  <div class="addresses-header">
+    <h2>Saved Addresses</h2>
+    <button class="btn-primary" id="openAddAddressBtn" {% if not can_add_more %}disabled{% endif %}>
+      + Add Address
+    </button>
+  </div>
+
+  <div id="addressListContainer">
+    {% if not addresses %}
+      <div class="empty-state">
+        <div class="empty-icon">📍</div>
+        <p>No Addresses Yet</p>
+        
+        <span>Add a delivery address to make checkout easier</span>
+      </div>
+    {% else %}
+      {% for addr in addresses %}
+       <div class="address-card {% if addr.is_primary %}is-primary{% endif %}" data-id="{{ addr.id }}">
+          <div class="address-info">
+            <strong>{{ addr.full_name }}</strong>
+            {% if addr.is_primary %}<span class="badge-primary">Primary</span>{% endif %}
+            <p>{{ addr.street_address }}{% if addr.apartment %}, {{ addr.apartment }}{% endif %}</p>
+            <p>{{ addr.city }}</p>
+            <p>{{ addr.phone_number }}</p>
+          </div>
+          <div class="address-actions">
+            {% if not addr.is_primary %}
+              <button class="set-primary-btn" data-id="{{ addr.id }}">Set as Primary</button>
+            {% endif %}
+            <button class="delete-address-btn" data-id="{{ addr.id }}">Delete</button>
+          </div>
+        </div>
+      {% endfor %}
+    {% endif %}
+  </div>
+</div>
+
+{% include 'addresses/_address_modal.html' %}
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="{% static 'css/addresses.css' %}">
+{% endblock %}  
+{% block extra_js %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="{% static 'js/address_map.js' %}"></script>
+{% endblock %}

@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm
 
-from .models import Address, CustomUser
+from .models import  CustomUser
 
 
 # ─────────────────────────────────────────────────────────────
@@ -106,43 +106,3 @@ class RegisterForm(forms.ModelForm):
             user.save()
         return user
 
-
-# ─────────────────────────────────────────────────────────────
-# Profile Update Form
-# ─────────────────────────────────────────────────────────────
-
-class ProfileUpdateForm(forms.ModelForm):
-    """Let users update their name, phone number, and avatar."""
-
-    class Meta:
-        model  = CustomUser
-        fields = ('first_name', 'last_name', 'phone_number', 'avatar')
-        widgets = {
-            'first_name'  : forms.TextInput(attrs={'class': 'form-input'}),
-            'last_name'   : forms.TextInput(attrs={'class': 'form-input'}),
-            'phone_number': forms.TextInput(attrs={'class': 'form-input', 'placeholder': '+92 300 0000000'}),
-            'avatar'      : forms.FileInput(attrs={'class': 'form-input-file'}),
-        }
-
-
-# ─────────────────────────────────────────────────────────────
-# Address Form
-# ─────────────────────────────────────────────────────────────
-
-class AddressForm(forms.ModelForm):
-    """Add or edit a saved address."""
-
-    class Meta:
-        model   = Address
-        fields  = ('label', 'full_name', 'phone', 'address_line', 'city', 'province', 'postal_code', 'country', 'is_default')
-        widgets = {
-            'label'      : forms.Select(attrs={'class': 'form-input'}),
-            'full_name'  : forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Full name'}),
-            'phone'      : forms.TextInput(attrs={'class': 'form-input', 'placeholder': '+92 300 0000000'}),
-            'address_line'     : forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Street address'}),
-            'city'       : forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'City'}),
-            'province'   : forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Province'}),
-            'postal_code': forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Postal code'}),
-            'country'    : forms.TextInput(attrs={'class': 'form-input'}),
-            'is_default' : forms.CheckboxInput(attrs={'class': 'form-checkbox'}),
-        }

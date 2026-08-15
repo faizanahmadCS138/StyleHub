@@ -73,18 +73,37 @@
                 Delivery
             </div>
 
+            {% if user.is_authenticated and user_addresses %}
+            <div class="input-group saved-address-wrapper" style="margin-bottom: 14px;">
+                <label for="saved-address-select" style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: #333;">
+                    <i class="fa-solid fa-location-dot" style="margin-right: 5px; color: #005bd3;"></i> Saved Address
+                </label>
+                <select id="saved-address-select" class="form-input" style="font-weight: 500; cursor: pointer; border-color: #005bd3; background-color: #f4f8ff;">
+                    {% for addr in user_addresses %}
+                    <option value="{{ addr.id }}"
+                            data-full-name="{{ addr.full_name|default:'' }}"
+                            data-phone="{{ addr.phone_number|default:'' }}"
+                            data-street="{{ addr.street_address|default:'' }}"
+                            data-apartment="{{ addr.apartment|default:'' }}"
+                            data-city="{{ addr.city|default:'' }}"
+                            {% if addr.is_primary %}selected{% endif %}>
+                        {% if addr.is_primary %}★ Primary: {% endif %}{{ addr.full_name }} — {{ addr.street_address }}{% if addr.city %}, {{ addr.city }}{% endif %}
+                    </option>
+                    {% endfor %}
+                    <option value="new">+ Use a new address</option>
+                </select>
+            </div>
+            {% endif %}
+
             <div class="input-group">
                 <select name="country" class="form-input" disabled>
                     <option value="PK" selected>Pakistan</option>
                 </select>
             </div>
 
-
             <div class="grid-2">
-
                 <div class="input-group">
                     {{ form.first_name }}
-
                     {% if form.first_name.errors %}
                     <span class="error-text">
                         {{ form.first_name.errors.0 }}
@@ -92,23 +111,18 @@
                     {% endif %}
                 </div>
 
-
                 <div class="input-group">
                     {{ form.last_name }}
-
                     {% if form.last_name.errors %}
                     <span class="error-text">
                         {{ form.last_name.errors.0 }}
                     </span>
                     {% endif %}
                 </div>
-
             </div>
-
 
             <div class="input-group">
                 {{ form.address }}
-
                 {% if form.address.errors %}
                 <span class="error-text">
                     {{ form.address.errors.0 }}
@@ -116,12 +130,9 @@
                 {% endif %}
             </div>
 
-
             <div class="grid-2">
-
                 <div class="input-group">
                     {{ form.city }}
-
                     {% if form.city.errors %}
                     <span class="error-text">
                         {{ form.city.errors.0 }}
@@ -129,23 +140,18 @@
                     {% endif %}
                 </div>
 
-
                 <div class="input-group">
                     {{ form.postal_code }}
-
                     {% if form.postal_code.errors %}
                     <span class="error-text">
                         {{ form.postal_code.errors.0 }}
                     </span>
                     {% endif %}
                 </div>
-
             </div>
-
 
             <div class="input-group">
                 {{ form.phone }}
-
                 {% if form.phone.errors %}
                 <span class="error-text">
                     {{ form.phone.errors.0 }}

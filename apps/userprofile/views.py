@@ -7,11 +7,14 @@ from django.contrib import messages
 @login_required
 def user_profile(request):
     user = request.user
-    # Fetch all orders belonging to the logged-in user
-    orders = Order.objects.filter(user=user).order_by('-created_at')
+    # Fetch all orders belonging to the logged-in user (excluding incomplete/unpaid Stripe checkout attempts)
+    orders = Order.objects.filter(user=user).exclude(
+        payment_method='stripe',
+        payment_status='unpaid'
+    ).order_by('-created_at')
     
     # Grab primary address if user address model exists
-    default_address = user.addresses.filter(is_default=True).first() if hasattr(user, 'addresses') else None
+    default_address = user.addresses.filter(is_primary=True).first() if hasattr(user, 'addresses') else None
 
     context = {
         'orders': orders,

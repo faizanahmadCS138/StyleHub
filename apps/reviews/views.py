@@ -19,7 +19,7 @@ def product_reviews(request, product_id):
         and product.reviews.filter(user=request.user).exists()
     )
 
-    return render(request, 'reviews/product_reviews.html', {
+    return render(request, 'reviews/reviews.html', {
         'product': product,
         'reviews': reviews,
         'avg_rating': stats['avg_rating'] or 5,

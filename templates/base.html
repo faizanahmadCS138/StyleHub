@@ -49,7 +49,7 @@
         <div class="user-dropdown-menu">
           <span class="user-name-title">Hello, {{ user.first_name|default:user.email }}</span>
           <a href="{% url 'userprofile:user_profile' %}"><i class="fa-regular fa-id-card"></i> My Profile</a>
-          <a href="{% url 'accounts:addresses' %}"><i class="fa-solid fa-location-dot"></i> My Addresses</a>
+          <a href="{% url 'addresses:list' %}"><i class="fa-solid fa-location-dot"></i> My Addresses</a>
           <a href="{% url 'accounts:logout' %}" class="logout-link"><i class="fa-solid fa-arrow-right-from-bracket"></i>
             Log Out</a>
         </div>

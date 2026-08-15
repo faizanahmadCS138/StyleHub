@@ -1,17 +1,8 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
-from .models import Address, CustomUser
+from .models import  CustomUser
 
-
-# ─────────────────────────────────────────────────────────────
-# Inline — show addresses inside the user admin page
-# ─────────────────────────────────────────────────────────────
-
-class AddressInline(admin.TabularInline):
-    model  = Address
-    extra  = 0
-    fields = ('label', 'full_name', 'address_line', 'city', 'province', 'country', 'is_default')
 
 
 # ─────────────────────────────────────────────────────────────
@@ -31,7 +22,6 @@ class CustomUserAdmin(UserAdmin):
     ordering      = ('-created_at',)
     readonly_fields = ('created_at', 'updated_at', 'last_login')
 
-    inlines = [AddressInline]
 
     # Detail / edit view fieldsets
     fieldsets = (
@@ -50,13 +40,4 @@ class CustomUserAdmin(UserAdmin):
     )
 
 
-# ─────────────────────────────────────────────────────────────
-# Address Admin
-# ─────────────────────────────────────────────────────────────
 
-@admin.register(Address)
-class AddressAdmin(admin.ModelAdmin):
-    list_display  = ('user', 'label', 'full_name', 'city', 'province', 'is_default')
-    list_filter   = ('label', 'is_default', 'province')
-    search_fields = ('user__email', 'full_name', 'city', 'address_line')
-    ordering      = ('user', '-is_default')

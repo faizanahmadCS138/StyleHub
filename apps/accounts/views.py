@@ -4,8 +4,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 
-from .forms import AddressForm, LoginForm, ProfileUpdateForm, RegisterForm
-from .models import Address
+from .forms import  LoginForm, RegisterForm
 
 
 # ─────────────────────────────────────────────────────────────
@@ -170,69 +169,3 @@ def logout_view(request):
 # ─────────────────────────────────────────────────────────────
 # Profile
 # ─────────────────────────────────────────────────────────────
-
-@login_required
-def profile_view(request):
-    """View and update profile information."""
-    form = ProfileUpdateForm(
-        request.POST  or None,
-        request.FILES or None,
-        instance=request.user,
-    )
-
-    if request.method == 'POST' and form.is_valid():
-        form.save()
-        messages.success(request, 'Profile updated successfully.')
-        return redirect('accounts:profile')
-
-    return render(request, 'accounts/profile.html', {'form': form})
-
-
-# ─────────────────────────────────────────────────────────────
-# Addresses
-# ─────────────────────────────────────────────────────────────
-
-@login_required
-def address_list_view(request):
-    """Show all saved addresses for the logged-in user."""
-    addresses = request.user.addresses.all()
-    return render(request, 'accounts/addresses.html', {'addresses': addresses})
-
-
-@login_required
-def address_create_view(request):
-    """Add a new address."""
-    form = AddressForm(request.POST or None)
-
-    if request.method == 'POST' and form.is_valid():
-        address      = form.save(commit=False)
-        address.user = request.user
-        address.save()
-        messages.success(request, 'Address added successfully.')
-        return redirect('accounts:addresses')
-
-    return render(request, 'accounts/address_form.html', {'form': form, 'action': 'Add'})
-
-
-@login_required
-def address_edit_view(request, pk):
-    """Edit an existing address (only the owner can edit)."""
-    address = get_object_or_404(Address, pk=pk, user=request.user)
-    form    = AddressForm(request.POST or None, instance=address)
-
-    if request.method == 'POST' and form.is_valid():
-        form.save()
-        messages.success(request, 'Address updated.')
-        return redirect('accounts:addresses')
-
-    return render(request, 'accounts/address_form.html', {'form': form, 'action': 'Edit'})
-
-
-@login_required
-def address_delete_view(request, pk):
-    """Delete an address (POST only for CSRF safety)."""
-    address = get_object_or_404(Address, pk=pk, user=request.user)
-    if request.method == 'POST':
-        address.delete()
-        messages.success(request, 'Address removed.')
-    return redirect('accounts:addresses')

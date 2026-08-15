@@ -164,19 +164,11 @@
 
                     {% if default_address %}
 
-                    <p>{{ default_address.address_line }}</p>
-                    <p>{{ default_address.city_name }}</p>
+                    <p>{{ default_address.full_name }}</p>
+                    <p>{{ default_address.phone_number }}</p>
+                    <p>{{ default_address.street_address }}{% if default_address.apartment %}, {{ default_address.apartment }}{% endif %}</p>
+                    <p>{{ default_address.city }}</p>
                     <p>Pakistan</p>
-
-                    {% elif user.orders.first %}
-
-                    {% with latest_order=user.orders.first %}
-
-                    <p>{{ latest_order.address_line }}</p>
-                    <p>{{ latest_order.city_name }}</p>
-                    <p>Pakistan</p>
-
-                    {% endwith %}
 
                     {% else %}
 
@@ -186,11 +178,11 @@
 
                     {% endif %}
 
-                </div>
+</div>
 
 
                 <!-- Addresses -->
-                <a href="#" class="view-addresses">
+                <a href="{% url 'addresses:list' %}" class="view-addresses">
                     View addresses ({{ address_count }})
                 </a>
 
@@ -203,7 +195,7 @@
                         <span>→</span>
                     </a> -->
 
-                    <a href="#" class="account-nav-item">
+                    <a href="{% url 'addresses:list' %}" class="account-nav-item">
                         <span>My addresses</span>
                         <span>→</span>
                     </a>

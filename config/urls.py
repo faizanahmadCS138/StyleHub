@@ -23,7 +23,7 @@ admin.site.site_header  = 'StyleHub Admin'
 admin.site.site_title   = 'StyleHub'
 admin.site.index_title  = 'Store Management'
 
-urlpatterns = [
+urlpatterns = [ 
     # ── Django Admin ──────────────────────────────────────────────
     path('admin/', admin.site.urls),
     path(
@@ -37,6 +37,7 @@ urlpatterns = [
 
     # ── Our Custom Accounts ───────────────────────────────────────
     path('accounts/', include('apps.accounts.urls', namespace='accounts')),
+    path('accounts/addresses/',include('apps.addresses.urls',namespace='addresses')),
     path('profile/', include('apps.userprofile.urls', namespace='userprofile')),
     # ── Catalog (home + products + search + categories) ───────────
     # Mounted at root so home page is just '/'

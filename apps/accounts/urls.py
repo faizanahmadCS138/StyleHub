@@ -42,9 +42,5 @@ urlpatterns = [
          ), 
          name='password_reset_complete'),
 
-    # ── Addresses ─────────────────────────────────────────
-    path('addresses/',              views.address_list_view,   name='addresses'),
-    path('addresses/add/',          views.address_create_view, name='address-add'),
-    path('addresses/<int:pk>/edit/',views.address_edit_view,   name='address-edit'),
-    path('addresses/<int:pk>/delete/', views.address_delete_view, name='address-delete'),
+ 
 ]

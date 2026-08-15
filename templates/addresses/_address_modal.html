@@ -1,0 +1,43 @@
+<div id="addAddressModal" class="modal-overlay" style="display:none;">
+  <div class="modal-box">
+    <div class="modal-topbar">
+      <div class="modal-title">
+        <span class="pin-icon">📍</span>
+        <h3>Select location</h3>
+      </div>
+      <button type="button" id="closeAddressModal">&times;</button>
+    </div>
+
+    <div class="modal-map-area">
+      <div class="map-search-bar">
+        <div class="search-input-wrap">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="addressSearchInput" placeholder="Search location...">
+          <div id="searchResults"></div>
+        </div>
+        <button type="button" id="locateBtn">
+          <span>📍</span> Locate
+        </button>
+      </div>
+
+      <div id="map"></div>
+
+      <div class="form-panel">
+        <form id="addressForm">
+          <input type="text" id="fullName" placeholder="Full Name *" required>
+          <input type="text" id="phoneNumber" placeholder="Phone Number *" required>
+          <input type="text" id="streetAddress" placeholder="Street Address *" required>
+          <input type="text" id="apartment" placeholder="Apartment, suite, etc. (Optional)">
+          <input type="hidden" id="latitude">
+          <input type="hidden" id="longitude">
+          <input type="hidden" id="city">
+
+          <div class="form-panel-footer">
+            <button type="button" id="cancelAddressBtn">Cancel</button>
+            <button type="submit" id="saveAddressBtn">✓ Save Address</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
