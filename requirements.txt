@@ -4,7 +4,7 @@
 
 # Core Django
 Django>=5.2,<6.0
-psycopg2-binary           # PostgreSQL driver
+psycopg2-binary>=2.9
 
 # Jinja2 templating
 django-jinja
@@ -26,14 +26,16 @@ django-filter
 cloudinary
 django-cloudinary-storage
 
-# Static files (production)
+# Virtual Try-On
+gradio_client>=2.6.0
+
+# Static files & Web Server (production)
 whitenoise
+gunicorn
+
+# Payment & Email
+stripe
+sendgrid
 
 # Dev tools
 django-debug-toolbar
-
-#payment
-stripe
-
-#
-sendgrid email service

@@ -56,6 +56,7 @@ urlpatterns = [
     path('wishlist/', include('apps.wishlist.urls', namespace='wishlist')),
 
     path('reviews/', include('apps.reviews.urls', namespace='reviews')),
+    path("virtual-tryon/", include("apps.virtual_tryon.urls",namespace = 'virtual_tryon')),
 ]
 
 # ── Debug Toolbar (development only) ──────────────────────────────

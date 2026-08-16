@@ -8,6 +8,7 @@
 {% endblock %}
 
 {% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/virtual-tryon.css' %}" />
   <link rel="stylesheet" href="{% static 'css/catalog.css' %}" />
   <link rel="stylesheet" href="{% static 'css/product-detail.css' %}" />
    <link rel="stylesheet" href="{% static 'css/reviews.css' %}" />
@@ -97,7 +98,11 @@
 
         <!-- Full-Width Black ADD TO CART Button -->
         <button type="button" class="pdp-add-to-cart-btn" id="addToBagBtn" data-product-slug="{{ product.slug }}">ADD TO CART <i class="fa-solid fa-bag-shopping" style="font-size: 15px;"></i></button>
-
+        
+        <!-- Virtual Try-On Trigger -->
+        <button type="button" class="pdp-tryon-btn" id="tryOnBtn" data-product-id="{{ product.id }}" data-product-name="{{ product.name }}">
+          <i class="fa-solid fa-shirt"></i> TRY ON YOURSELF
+        </button>
         <!-- Product Description Section (Matching Outfitters Screenshot 1 & 3) -->
         <div class="pdp-description-block">
           <div class="pdp-description-heading">PRODUCT DESCRIPTION</div>
@@ -215,6 +220,7 @@
     </div>
 </div>
 
+{% include 'catalog/_virtual_tryon_modal.html' %}
     <!--   ─────────────────────────────────────────────────────────────
          3. RELATED PRODUCTS SECTION (YOU MAY ALSO LIKE)
          ─────────────────────────────────────────────────────────────   -->
@@ -275,4 +281,5 @@
   <script src="{% static 'js/product-detail.js' %}"></script>
   <script src="{% static 'js/wishlist.js' %}"></script>
   <script src="{% static 'js/reviews.js' %}"></script>
+  <script src="{% static 'js/virtual-tryon.js' %}"></script>
 {% endblock %}

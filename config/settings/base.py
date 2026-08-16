@@ -70,6 +70,7 @@ LOCAL_APPS = [
     'apps.wishlist',
     'apps.reviews',
     'apps.addresses',
+    'apps.virtual_tryon',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -207,17 +208,42 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
+# ============================================================
+# HUGGING FACE — VIRTUAL TRY-ON
+# ============================================================
 
+HF_TOKEN = config("HF_TOKEN", default="")
+
+VTON_HF_SPACE = config(
+    "VTON_HF_SPACE",
+    default="yisol/IDM-VTON",
+)
+
+VTON_TIMEOUT_SECONDS = config(
+    "VTON_TIMEOUT_SECONDS",
+    cast=int,
+    default=180,
+)
 # ──────────────────────────────────────────────────────────────────────────────
 # MEDIA FILES — Cloudinary
 # ──────────────────────────────────────────────────────────────────────────────
+
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': config('CLOUDINARY_CLOUD_NAME', default=''),
-    'API_KEY':    config('CLOUDINARY_API_KEY', default=''),
+    'API_KEY': config('CLOUDINARY_API_KEY', default=''),
     'API_SECRET': config('CLOUDINARY_API_SECRET', default=''),
 }
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-MEDIA_URL = '/media/'    # only used for local fallback
+
+STORAGES = {
+    'default': {
+        'BACKEND': 'django.core.files.storage.FileSystemStorage',
+    },
+    'staticfiles': {
+        'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage',
+    },
+}
+
+MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 STYLEHUB_WHATSAPP_NUMBER = config('STYLEHUB_WHATSAPP_NUMBER', default='')

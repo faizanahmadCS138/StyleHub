@@ -1,0 +1,53 @@
+<!-- VIRTUAL TRY-ON MODAL -->
+<div id="tryonModal" class="tryon-modal">
+  <div class="tryon-modal-content">
+
+    <!-- HEADER -->
+    <div class="tryon-modal-header">
+      <h2 id="tryonModalTitle">Try On This Product</h2>
+      <button type="button" id="tryonModalClose" aria-label="Close try-on modal">&times;</button>
+    </div>
+
+    <!-- BODY: UPLOAD STATE -->
+    <div class="tryon-modal-body" id="tryonUploadState">
+      <p class="tryon-modal-subtext">See how this product looks on you. Upload a clear, front-facing photo.</p>
+
+      <input type="file" id="tryonFileInput" accept="image/png,image/jpeg,image/jpg" hidden>
+
+      <div class="tryon-dropzone" id="tryonDropzone">
+        <div class="tryon-dropzone-empty" id="tryonDropzoneEmpty">
+          <i class="fa-solid fa-camera"></i>
+          <span>Upload Your Photo</span>
+          <small>JPG, JPEG or PNG</small>
+        </div>
+        <div class="tryon-preview-wrap" id="tryonPreviewWrap" style="display:none;">
+          <img id="tryonPreviewImg" src="" alt="Your photo preview">
+          <button type="button" class="tryon-remove-btn" id="tryonRemoveBtn" aria-label="Remove photo">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+      </div>
+
+      <p class="tryon-error-text" id="tryonErrorText"></p>
+
+      <button type="button" class="tryon-generate-btn" id="tryonGenerateBtn" disabled>Generate Try-On</button>
+    </div>
+
+    <!-- BODY: LOADING STATE -->
+    <div class="tryon-modal-body tryon-loading-state" id="tryonLoadingState" style="display:none;">
+      <div class="tryon-spinner"></div>
+      <p class="tryon-loading-title">Generating your try-on...</p>
+      <p class="tryon-loading-subtext">This may take a little while.</p>
+    </div>
+
+    <!-- BODY: RESULT STATE -->
+    <div class="tryon-modal-body tryon-result-state" id="tryonResultState" style="display:none;">
+      <img id="tryonResultImg" src="" alt="Your try-on result" class="tryon-result-img">
+      <div class="tryon-result-actions">
+        <button type="button" class="tryon-tryagain-btn" id="tryonTryAgainBtn">Try Again</button>
+        <button type="button" class="tryon-close-btn" id="tryonCloseResultBtn">Close</button>
+      </div>
+    </div>
+
+  </div>
+</div>
