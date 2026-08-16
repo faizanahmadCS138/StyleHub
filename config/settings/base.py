@@ -20,8 +20,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 # ──────────────────────────────────────────────────────────────────────────────
 SECRET_KEY = config('SECRET_KEY')
 DEBUG = config('DEBUG', default=False, cast=bool)
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '.vercel.app,localhost,127.0.0.1').split(',')
-
+ALLOWED_HOSTS = config(
+    'ALLOWED_HOSTS', 
+    default='.vercel.app,localhost,127.0.0.1,style-hub-git-main-popo-7d4f.vercel.app', 
+    cast=Csv()
+)
 # ──────────────────────────────────────────────────────────────────────────────
 # INSTALLED APPS
 # ──────────────────────────────────────────────────────────────────────────────
