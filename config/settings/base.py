@@ -3,7 +3,7 @@ Base settings for StyleHub E-Commerce project.
 All shared settings live here.
 dev.py and prod.py import from this file and override as needed.
 """
-
+import os
 from pathlib import Path
 # pyrefly: ignore [missing-import]
 from decouple import config, Csv
@@ -20,12 +20,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 # ──────────────────────────────────────────────────────────────────────────────
 SECRET_KEY = config('SECRET_KEY')
 DEBUG = config('DEBUG', default=False, cast=bool)
-ALLOWED_HOSTS = [
-    '.vercel.app',  # Allows all *.vercel.app subdomains (production & preview deployments)
-    'localhost',
-    '127.0.0.1',
-]
-
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '.vercel.app,localhost,127.0.0.1').split(',')
 
 # ──────────────────────────────────────────────────────────────────────────────
 # INSTALLED APPS
