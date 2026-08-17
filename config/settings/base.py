@@ -273,14 +273,14 @@ REST_FRAMEWORK = {
 }
 
 
-EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.smtp.EmailBackend')
-EMAIL_HOST = config('EMAIL_HOST', default='smtp.sendgrid.net')
-EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
-EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
-EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
-EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
-DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='StyleHub <faizanahmad14055@gmail.com>')
+EMAIL_BACKEND = 'sendgrid_backend.SendgridBackend'
 
+SENDGRID_API_KEY = config('SENDGRID_API_KEY', default='')
+SENDGRID_SANDBOX_MODE_IN_DEBUG = False
+DEFAULT_FROM_EMAIL = config(
+    'DEFAULT_FROM_EMAIL',
+    default='StyleHub <faizanahmad14055@gmail.com>'
+)
 
 # ──────────────────────────────────────────────────────────────────────────────
 # MISC
@@ -292,4 +292,7 @@ STRIPE_SECRET_KEY = config("STRIPE_SECRET_KEY", default="")
 STRIPE_WEBHOOK_SECRET = config("STRIPE_WEBHOOK_SECRET", default="")
 
 
-SITE_URL = 'http://127.0.0.1:8000'
+SITE_URL = config(
+    'SITE_URL',
+    default='https://stylehub-6b0r.onrender.com'
+)
