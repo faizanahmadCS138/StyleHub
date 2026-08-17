@@ -44,3 +44,4 @@ EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
 
 # Make email verification mandatory in production
 ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
+
