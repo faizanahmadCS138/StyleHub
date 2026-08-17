@@ -24,7 +24,9 @@ CSRF_TRUSTED_ORIGINS = config(
     default='',
     cast=Csv()
 )
+SITE_ID = 1
 
+SITE_URL = 'https://stylehub-6b0r.onrender.com'
 # Enforce HTTPS
 SECURE_SSL_REDIRECT = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
