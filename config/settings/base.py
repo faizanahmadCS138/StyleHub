@@ -135,6 +135,10 @@ DATABASES = {
         'PASSWORD': config('DB_PASSWORD'),
         'HOST':     config('DB_HOST', default='localhost'),
         'PORT':     config('DB_PORT', default='5432'),
+
+        'OPTIONS': {
+            'sslmode': 'require',
+        },
     }
 }
 
@@ -206,7 +210,7 @@ USE_TZ = True
 # STATIC FILES
 # ──────────────────────────────────────────────────────────────────────────────
 STATIC_URL = '/static/'
-STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
