@@ -31,3 +31,7 @@ Done.txt
 # OS
 .DS_Store
 Thumbs.db
+
+# Data dumps
+datadump.json
+data.sql
