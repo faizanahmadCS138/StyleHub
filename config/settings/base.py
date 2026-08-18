@@ -153,7 +153,7 @@ AUTHENTICATION_BACKENDS = [
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
 
-SITE_ID = 1
+SITE_ID = 4
 
 ACCOUNT_USER_MODEL_USERNAME_FIELD = None   # ADD THIS: Tells allauth CustomUser has no username field
 # ACCOUNT_USERNAME_REQUIRED = False          # ADD THIS: Prevents searching/requiring usernames

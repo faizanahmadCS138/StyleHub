@@ -24,7 +24,7 @@ CSRF_TRUSTED_ORIGINS = config(
     default='',
     cast=Csv()
 )
-SITE_ID = 1
+SITE_ID = 3
 
 SITE_URL = 'https://stylehub-6b0r.onrender.com'
 # Enforce HTTPS
