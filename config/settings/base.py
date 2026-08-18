@@ -75,7 +75,7 @@ LOCAL_APPS = [
     'apps.virtual_tryon',
 ]
 
-INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
+INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS + ['django.contrib.postgres']
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -135,7 +135,9 @@ DATABASES = {
         'PASSWORD': config('DB_PASSWORD'),
         'HOST':     config('DB_HOST', default='localhost'),
         'PORT':     config('DB_PORT', default='5432'),
+        # keep connections alive 10 min instead of reopening every request
 
+        'CONN_MAX_AGE': 600,  
         'OPTIONS': {
             'sslmode': 'require',
         },

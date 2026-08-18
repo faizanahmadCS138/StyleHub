@@ -3,7 +3,7 @@ from django.conf import settings
 from apps.core.models import TimeStampedModel
 from apps.catalog.models import ProductVariant
 from decimal import Decimal
-
+from django.contrib.postgres.indexes import GinIndex
 class Order(TimeStampedModel):
     STATUS_CHOICES = [
         ('pending', 'Pending Payment'),
@@ -72,6 +72,11 @@ class Order(TimeStampedModel):
 
     class Meta:
         ordering = ['-created_at']
+        indexes = [
+        models.Index(fields=['user', 'status']),
+        models.Index(fields=['status']),
+        models.Index(fields=['email']),
+    ]
 
     def __str__(self):
         return f'Order {self.order_number}'

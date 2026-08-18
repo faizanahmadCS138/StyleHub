@@ -2,7 +2,7 @@ from django.db import models
 from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
 from apps.catalog.models import Product
-
+from django.contrib.postgres.indexes import GinIndex
 
 class Review(models.Model):
     product = models.ForeignKey(
@@ -27,6 +27,9 @@ class Review(models.Model):
     class Meta:
         unique_together = ('user', 'product')
         ordering = ['-created_at']
+        indexes = [
+        models.Index(fields=['product', 'is_approved']),
+    ]
 
     def __str__(self):
         return f"{self.product} - {self.rating}★ by {self.user}"

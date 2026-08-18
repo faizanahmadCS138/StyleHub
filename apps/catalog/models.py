@@ -13,7 +13,7 @@ from django.db import models
 from django.utils.text import slugify
 
 from apps.core.models import TimeStampedModel
-
+from django.contrib.postgres.indexes import GinIndex
 
 # ─────────────────────────────────────────────────────────────
 # Category
@@ -113,6 +113,15 @@ class Product(TimeStampedModel):
 
     class Meta:
         ordering = ['-created_at']
+        indexes = [
+        models.Index(fields=['is_active', 'is_featured']),
+        models.Index(fields=['category', 'is_active']),
+        models.Index(fields=['gender', 'is_active']),
+        models.Index(fields=['is_on_sale']),
+        GinIndex(fields=['name'], name='product_name_trgm', opclasses=['gin_trgm_ops']),
+        GinIndex(fields=['brand'], name='product_brand_trgm', opclasses=['gin_trgm_ops']),
+        GinIndex(fields=['description'], name='product_desc_trgm', opclasses=['gin_trgm_ops']),
+    ]
 
     def __str__(self):
         return self.name
@@ -263,6 +272,10 @@ class ProductVariant(models.Model):
 
     class Meta:
         unique_together = ('product', 'size', 'color')
+        indexes = [
+        models.Index(fields=['product', 'is_active']),
+        models.Index(fields=['stock_quantity']),
+    ]
 
     def __str__(self):
         parts = [self.product.name]
