@@ -74,16 +74,16 @@ class StyleHubCartManager:
                 variant=guest_item.variant
             )
 
-        if created:
-            user_item.quantity = guest_item.quantity
-        else:
-            user_item.quantity += guest_item.quantity
+            if created:
+                user_item.quantity = guest_item.quantity
+            else:
+                user_item.quantity += guest_item.quantity
 
         # Don't exceed stock
-        if user_item.quantity > guest_item.variant.stock_quantity:
-            user_item.quantity = guest_item.variant.stock_quantity
+            if user_item.quantity > guest_item.variant.stock_quantity:
+                user_item.quantity = guest_item.variant.stock_quantity
 
-        user_item.save()
+            user_item.save()
 
         # Delete old guest cart
         guest_cart.delete()
