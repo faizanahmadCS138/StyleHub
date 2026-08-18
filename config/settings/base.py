@@ -281,6 +281,9 @@ DEFAULT_FROM_EMAIL = config(
     'DEFAULT_FROM_EMAIL',
     default='StyleHub <faizanahmad14055@gmail.com>'
 )
+SENDGRID_TRACK_CLICKS_HTML = False
+SENDGRID_TRACK_CLICKS_PLAIN = False
+SENDGRID_TRACK_EMAIL_OPENS = False
 
 # ──────────────────────────────────────────────────────────────────────────────
 # MISC
