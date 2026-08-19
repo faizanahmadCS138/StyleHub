@@ -68,11 +68,26 @@
 }
 
 .header-icon-btn {
-    color: var(--color-dark);
+    color: #111111;
     font-size: 18px;
     display: flex;
     align-items: center;
+    justify-content: center;
     position: relative;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    text-decoration: none;
+}
+
+.header-icon-btn:hover {
+    background: #f2f2f2;
+    color: #000000;
+    transform: translateY(-1px);
 }
 
 .cart-badge {

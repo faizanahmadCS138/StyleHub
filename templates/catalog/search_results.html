@@ -1,0 +1,325 @@
+{% extends "base.html" %}
+{% load static %}
+{% load humanize %}
+{% load wishlist_tags %}
+
+{% block title %}
+    {% if query %}
+        Search Results for "{{ query }}" — StyleHub
+    {% else %}
+        Search Results — StyleHub
+    {% endif %}
+{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/catalog.css' %}?v=2">
+    <link rel="stylesheet" href="{% static 'css/search.css' %}?v=2">
+{% endblock %}
+
+{% block content %}
+<div class="catalog-container search-results-container">
+
+    <!-- ─────────────────────────────────────────────────────────────
+         1. BREADCRUMBS
+         ───────────────────────────────────────────────────────────── -->
+    <nav class="catalog-breadcrumbs" aria-label="Breadcrumb">
+        <a href="{% url 'catalog:home' %}">HOME</a>
+        <span class="crumb-separator">/</span>
+        <span class="active-crumb">SEARCH RESULTS</span>
+    </nav>
+
+    <!-- ─────────────────────────────────────────────────────────────
+         2. OUTFITTERS-STYLE SEARCH HEADER
+         ───────────────────────────────────────────────────────────── -->
+    <div class="search-page-header">
+        <h1 class="search-page-title">Search Results</h1>
+
+        <div class="search-meta-bar">
+            <div class="search-badge-tab">
+                Products ({{ total_results }})
+            </div>
+
+            <div class="search-meta-right">
+                <form id="sortForm" method="get" action="{% url 'catalog:search' %}" class="search-sort-form">
+                    <input type="hidden" name="q" value="{{ query }}">
+                    {% for d in selected_discounts %}<input type="hidden" name="discount" value="{{ d }}">{% endfor %}
+                    {% for g in selected_genders %}<input type="hidden" name="gender" value="{{ g }}">{% endfor %}
+                    {% for t in selected_types %}<input type="hidden" name="product_type" value="{{ t }}">{% endfor %}
+                    {% for s in selected_sizes %}<input type="hidden" name="size" value="{{ s }}">{% endfor %}
+                    {% for c in selected_colors %}<input type="hidden" name="color" value="{{ c }}">{% endfor %}
+                    {% if min_price %}<input type="hidden" name="min_price" value="{{ min_price }}">{% endif %}
+                    {% if max_price %}<input type="hidden" name="max_price" value="{{ max_price }}">{% endif %}
+
+                    <div class="search-sort-select-wrap">
+                        <select name="sort" id="sortSelect" onchange="this.form.submit()">
+                            <option value="newest" {% if sort == 'newest' %}selected{% endif %}>Relevance</option>
+                            <option value="price_asc" {% if sort == 'price_asc' %}selected{% endif %}>Price: Low to High</option>
+                            <option value="price_desc" {% if sort == 'price_desc' %}selected{% endif %}>Price: High to Low</option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down select-icon"></i>
+                    </div>
+                </form>
+
+                <div class="catalog-grid-controls">
+                    <button class="grid-view-btn" id="btnGrid3" title="3 Columns View"><i class="fa-solid fa-table-cells"></i></button>
+                    <button class="grid-view-btn active" id="btnGrid4" title="4 Columns View"><i class="fa-solid fa-table-cells-large"></i></button>
+                    <button class="grid-view-btn" id="btnGrid5" title="5 Columns View"><i class="fa-solid fa-grip-vertical"></i></button>
+                </div>
+            </div>
+        </div>
+
+        <div class="search-query-summary">
+            Showing <strong>{{ total_results }}</strong> results for "{{ query }}"
+        </div>
+    </div>
+
+    <!-- ─────────────────────────────────────────────────────────────
+         3. MAIN LAYOUT: FACETS SIDEBAR + PRODUCTS GRID
+         ───────────────────────────────────────────────────────────── -->
+    <div class="catalog-layout">
+
+        <!-- 3A. FACET FILTERS SIDEBAR -->
+        <aside class="catalog-sidebar">
+            <form id="facetFilterForm" method="get" action="{% url 'catalog:search' %}">
+                <input type="hidden" name="q" value="{{ query }}">
+                <input type="hidden" name="sort" value="{{ sort }}">
+
+                <!-- DISCOUNT ACCORDION -->
+                <div class="facet-accordion-item open">
+                    <button type="button" class="facet-accordion-header">
+                        <span>Discount {% if selected_discounts %}({{ selected_discounts|length }}){% endif %}</span>
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </button>
+                    <div class="facet-accordion-body">
+                        {% if discount_counts %}
+                            {% for item in discount_counts %}
+                                <label class="facet-checkbox-label">
+                                    <input type="checkbox" name="discount" value="{{ item.discount_percentage }}"
+                                           {% if item.discount_percentage|stringformat:"i" in selected_discounts %}checked{% endif %}
+                                           onchange="this.form.submit()">
+                                    <span class="checkbox-text">{{ item.discount_percentage }}% Off</span>
+                                    <span class="facet-count">({{ item.count }})</span>
+                                </label>
+                            {% endfor %}
+                        {% else %}
+                            <p class="facet-empty">No discounted items</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- GENDER ACCORDION -->
+                <div class="facet-accordion-item open">
+                    <button type="button" class="facet-accordion-header">
+                        <span>Gender {% if selected_genders %}({{ selected_genders|length }}){% endif %}</span>
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </button>
+                    <div class="facet-accordion-body">
+                        {% for item in gender_counts %}
+                            <label class="facet-checkbox-label">
+                                <input type="checkbox" name="gender" value="{{ item.gender }}"
+                                       {% if item.gender in selected_genders %}checked{% endif %}
+                                       onchange="this.form.submit()">
+                                <span class="checkbox-text">{{ item.gender|title }}</span>
+                                <span class="facet-count">({{ item.count }})</span>
+                            </label>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- PRODUCT TYPE ACCORDION -->
+                <div class="facet-accordion-item open">
+                    <button type="button" class="facet-accordion-header">
+                        <span>Product type {% if selected_types %}({{ selected_types|length }}){% endif %}</span>
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </button>
+                    <div class="facet-accordion-body">
+                        {% for item in type_counts %}
+                            <label class="facet-checkbox-label">
+                                <input type="checkbox" name="product_type" value="{{ item.category__id }}"
+                                       {% if item.category__id|stringformat:"i" in selected_types %}checked{% endif %}
+                                       onchange="this.form.submit()">
+                                <span class="checkbox-text">{{ item.category__name }}</span>
+                                <span class="facet-count">({{ item.count }})</span>
+                            </label>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- SIZE ACCORDION -->
+                <div class="facet-accordion-item open">
+                    <button type="button" class="facet-accordion-header">
+                        <span>Size {% if selected_sizes %}({{ selected_sizes|length }}){% endif %}</span>
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </button>
+                    <div class="facet-accordion-body">
+                        {% for item in size_counts %}
+                            {% if item.variants__size__name %}
+                                <label class="facet-checkbox-label">
+                                    <input type="checkbox" name="size" value="{{ item.variants__size__id }}"
+                                           {% if item.variants__size__id|stringformat:"i" in selected_sizes %}checked{% endif %}
+                                           onchange="this.form.submit()">
+                                    <span class="checkbox-text">{{ item.variants__size__name }}</span>
+                                    <span class="facet-count">({{ item.count }})</span>
+                                </label>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- COLOR ACCORDION -->
+                <div class="facet-accordion-item open">
+                    <button type="button" class="facet-accordion-header">
+                        <span>Color {% if selected_colors %}({{ selected_colors|length }}){% endif %}</span>
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </button>
+                    <div class="facet-accordion-body">
+                        {% for item in color_counts %}
+                            <label class="facet-checkbox-label">
+                                <input type="checkbox" name="color" value="{{ item.variants__color }}"
+                                       {% if item.variants__color in selected_colors %}checked{% endif %}
+                                       onchange="this.form.submit()">
+                                <span class="color-swatch-mini" style="background-color: {{ item.variants__color_hex|default:'#222' }};"></span>
+                                <span class="checkbox-text">{{ item.variants__color|title }}</span>
+                                <span class="facet-count">({{ item.count }})</span>
+                            </label>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- PRICE RANGE ACCORDION -->
+                <div class="facet-accordion-item open">
+                    <button type="button" class="facet-accordion-header">
+                        <span>Price Range, PKR</span>
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </button>
+                    <div class="facet-accordion-body">
+                        <div class="price-range-inputs">
+                            <input type="number" name="min_price" placeholder="Min" value="{{ min_price|default:'' }}">
+                            <span>-</span>
+                            <input type="number" name="max_price" placeholder="Max" value="{{ max_price|default:'' }}">
+                            <button type="submit" class="btn-price-apply">Go</button>
+                        </div>
+                    </div>
+                </div>
+
+                {% if selected_discounts or selected_genders or selected_types or selected_sizes or selected_colors or min_price or max_price %}
+                    <div class="clear-filters-wrap">
+                        <a href="{% url 'catalog:search' %}?q={{ query|urlencode }}" class="btn-clear-all">Clear All Filters</a>
+                    </div>
+                {% endif %}
+            </form>
+        </aside>
+
+        <!-- 3B. PRODUCTS GRID AREA -->
+        <main class="catalog-main">
+            {% if page_obj %}
+                <div class="product-grid grid-cols-4" id="productGrid">
+                    {% for product in page_obj %}
+                        <div class="product-card">
+                            <a href="{% url 'catalog:product-detail' slug=product.slug %}{% if product.color_swatches %}?color={{ product.color_swatches.0.color|urlencode }}{% endif %}" class="product-card-image-wrap">
+                                {% if product.color_swatches.0.image_url %}
+                                    <img src="{{ product.color_swatches.0.image_url }}" 
+                                         alt="{{ product.name }}" 
+                                         class="product-card-img" 
+                                         id="product-img-{{ product.id }}"
+                                         data-primary="{{ product.color_swatches.0.image_url }}"
+                                         {% if product.secondary_image %}data-secondary="{{ product.secondary_image.image.url }}"{% endif %}>
+                                {% elif product.primary_image %}
+                                    <img src="{{ product.primary_image.image.url }}" 
+                                         alt="{{ product.name }}" 
+                                         class="product-card-img" 
+                                         id="product-img-{{ product.id }}"
+                                         data-primary="{{ product.primary_image.image.url }}"
+                                         {% if product.secondary_image %}data-secondary="{{ product.secondary_image.image.url }}"{% endif %}>
+                                {% else %}
+                                    <div class="product-card-img" style="background: #f4f4f4; display: flex; align-items: center; justify-content: center; color: #888; font-size: 12px; font-weight: 600;">
+                                        NO IMAGE
+                                    </div>
+                                {% endif %}
+                            </a>
+
+                            <button type="button" 
+                                    class="wishlist-heart {% is_wishlisted request.user product as wl %}{% if wl %}wishlist-heart--active{% endif %}"
+                                    data-product-id="{{ product.id }}" aria-label="Toggle wishlist">
+                                <i class="fa-regular fa-heart heart-outline"></i>
+                                <i class="fa-solid fa-heart heart-filled"></i>
+                            </button>
+
+                            <div class="product-card-info">
+                                <a href="{% url 'catalog:product-detail' slug=product.slug %}{% if product.color_swatches %}?color={{ product.color_swatches.0.color|urlencode }}{% endif %}" class="product-card-title">
+                                    {{ product.name }}
+                                </a>
+
+                                <div class="product-card-subtitle">
+                                    RELAXED FIT | {{ product.gender|upper }}
+                                </div>
+
+                                <div class="product-card-price">
+                                    {% if product.is_on_sale %}
+                                        <span class="price-sale">PKR {{ product.sale_price|floatformat:0|intcomma }}</span>
+                                        <span class="price-original">PKR {{ product.base_price|floatformat:0|intcomma }}</span>
+                                    {% else %}
+                                        <span>PKR {{ product.base_price|floatformat:0|intcomma }}</span>
+                                    {% endif %}
+                                </div>
+
+                                {% with rating=product.avg_rating|default:5 %}
+                                <div class="product-card-rating">
+                                    {% for i in "12345" %}
+                                        <i class="fa-solid fa-star {% if forloop.counter <= rating %}filled{% endif %}"></i>
+                                    {% endfor %}
+                                </div>
+                                {% endwith %}
+
+                                {% if product.color_swatches %}
+                                    <div class="color-swatches-list">
+                                        {% for swatch in product.color_swatches %}
+                                            <span class="color-swatch-dot {% if forloop.first %}active{% endif %}" 
+                                                  style="background-color: {{ swatch.color_hex }};" 
+                                                  data-product-id="{{ product.id }}"
+                                                  data-color="{{ swatch.color }}"
+                                                  data-image-url="{{ swatch.image_url }}"
+                                                  title="{{ swatch.color }}"></span>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <!-- PAGINATION -->
+                {% if page_obj.has_other_pages %}
+                    <div style="display: flex; justify-content: center; gap: 15px; margin-top: 60px;">
+                        {% if page_obj.has_previous %}
+                            <a href="?page={{ page_obj.previous_page_number }}&q={{ query|urlencode }}" class="btn-auth-submit" style="width: auto; padding: 12px 24px; text-decoration: none;">PREVIOUS</a>
+                        {% endif %}
+                        <span style="font-size: 14px; font-weight: 700; display: flex; align-items: center; color: #111;">
+                            PAGE {{ page_obj.number }} OF {{ page_obj.paginator.num_pages }}
+                        </span>
+                        {% if page_obj.has_next %}
+                            <a href="?page={{ page_obj.next_page_number }}&q={{ query|urlencode }}" class="btn-auth-submit" style="width: auto; padding: 12px 24px; text-decoration: none;">NEXT</a>
+                        {% endif %}
+                    </div>
+                {% endif %}
+
+            {% else %}
+                <div class="search-empty-state">
+                    <div class="empty-icon-wrap">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </div>
+                    <h2>No results found for "{{ query }}"</h2>
+                    <p>Try checking your spelling or using broader search terms like "shirt", "jeans", or "hoodie".</p>
+                </div>
+            {% endif %}
+        </main>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{% static 'js/catalog.js' %}"></script>
+    <script src="{% static 'js/wishlist.js' %}"></script>
+    <script src="{% static 'js/reviews.js' %}"></script>
+{% endblock %}

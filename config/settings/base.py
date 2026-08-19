@@ -129,18 +129,27 @@ TEMPLATES = [
 # ──────────────────────────────────────────────────────────────────────────────
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
+        'ENGINE':   'django.db.backends.postgresql',
         'NAME':     config('DB_NAME'),
         'USER':     config('DB_USER'),
         'PASSWORD': config('DB_PASSWORD'),
         'HOST':     config('DB_HOST', default='localhost'),
         'PORT':     config('DB_PORT', default='5432'),
-        # keep connections alive 10 min instead of reopening every request
+        'CONN_MAX_AGE': 60,
+    }
+}
 
-        'CONN_MAX_AGE': 600,  
-        'OPTIONS': {
-            'sslmode': 'require',
-        },
+if 'localhost' not in DATABASES['default']['HOST'] and '127.0.0.1' not in DATABASES['default']['HOST']:
+    DATABASES['default']['OPTIONS'] = {'sslmode': 'require'}
+
+# ──────────────────────────────────────────────────────────────────────────────
+# CACHING — In-memory cache to avoid repeated slow remote DB queries
+# ──────────────────────────────────────────────────────────────────────────────
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'stylehub-cache',
+        'TIMEOUT': 300,  # 5 minutes default
     }
 }
 
@@ -156,7 +165,7 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 SITE_ID = 4
-
+# SITE_ID = 1
 ACCOUNT_USER_MODEL_USERNAME_FIELD = None   # ADD THIS: Tells allauth CustomUser has no username field
 # ACCOUNT_USERNAME_REQUIRED = False          # ADD THIS: Prevents searching/requiring usernames
 ACCOUNT_LOGIN_METHODS = {'email'}           # login with email, not username
@@ -242,9 +251,11 @@ CLOUDINARY_STORAGE = {
     'API_SECRET': config('CLOUDINARY_API_SECRET', default=''),
 }
 
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+
 STORAGES = {
     'default': {
-        'BACKEND': 'django.core.files.storage.FileSystemStorage',
+        'BACKEND': 'cloudinary_storage.storage.MediaCloudinaryStorage',
     },
     'staticfiles': {
         'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage',

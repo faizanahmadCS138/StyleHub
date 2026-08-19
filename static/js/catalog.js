@@ -97,4 +97,17 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         }
     });
+
+    // ── Facet Accordions Toggle ──────────────────────────────
+    const accordionHeaders = document.querySelectorAll('.facet-accordion-header');
+    accordionHeaders.forEach(header => {
+        header.addEventListener('click', function (e) {
+            e.preventDefault();
+            const item = this.closest('.facet-accordion-item');
+            if (item) {
+                item.classList.toggle('open');
+            }
+        });
+    });
 });
+

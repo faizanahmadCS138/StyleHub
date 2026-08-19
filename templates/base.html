@@ -15,8 +15,9 @@
   <!-- FontAwesome icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <!-- Modular CSS Manifest -->
-  <link rel="stylesheet" href="{% static 'css/main.css' %}" />
+  <link rel="stylesheet" href="{% static 'css/main.css' %}?v=2" />
   <link rel="stylesheet" href="{% static 'css/cart.css' %}" />
+  <link rel="stylesheet" href="{% static 'css/search.css' %}?v=2" />
   {% block extra_css %}
 
   {% endblock %}
@@ -37,10 +38,13 @@
     </div>
 
     <div class="header-right">
-      <form action="{% url 'catalog:search' %}" method="get" class="search-box">
-        <i class="fa-solid fa-magnifying-glass search-icon"></i>
-        <input type="text" name="q" placeholder="Search" />
-      </form>
+      <button type="button" class="header-icon-btn search-trigger" id="searchTriggerBtn"
+        title="Search" aria-label="Open search"
+        data-live-url="{% url 'catalog:live_search' %}"
+        data-search-url="{% url 'catalog:search' %}">
+        <i class="fa-solid fa-magnifying-glass"></i>
+      </button>
+
 
       {% if user.is_authenticated %}
       <div class="user-dropdown-wrapper">
@@ -182,6 +186,38 @@
     </aside>
   </div>
 
+  <!--       ─────────────────────────────────────────────────────────────
+       2C. SEARCH DRAWER OVERLAY
+       ─────────────────────────────────────────────────────────────       -->
+<div class="search-drawer-overlay" id="searchDrawerOverlay" aria-hidden="true">
+  <div class="search-drawer-panel" id="searchDrawerPanel">
+
+    <div class="search-drawer-bar">
+      <form id="searchDrawerForm" action="{% url 'catalog:search' %}" method="get">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" id="searchDrawerInput" name="q" placeholder="Search" autocomplete="off">
+      </form>
+      <button type="button" class="search-drawer-close" id="searchDrawerCloseBtn" aria-label="Close search">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <div class="search-drawer-body">
+      <div class="search-drawer-col search-drawer-suggestions" id="searchSuggestionsPanel">
+        <h4>Popular Suggestions</h4>
+        <ul id="searchSuggestionsList"></ul>
+      </div>
+
+      <div class="search-drawer-col search-drawer-results" id="searchResultsPanel" hidden>
+        <h4>Products</h4>
+        <div class="search-drawer-grid" id="searchProductsGrid"></div>
+        <a href="#" id="searchViewAllLink" class="search-view-all"></a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
   <!-- Flash Messages -->
   {% if messages %}
   <div class="messages-container">
@@ -287,6 +323,7 @@
     const IS_AUTHENTICATED = {{ user.is_authenticated|yesno:"true,false" }};
   </script>
   <script src="{% static 'js/wishlist.js' %}"></script>
+  <script src="{% static 'js/search_drawer.js' %}"></script>
   <script src="{% static 'js/cart/cart_api.js' %}"></script>
   <script src="{% static 'js/cart/cart_ui.js' %}"></script>
   <script src="{% static 'js/cart/cart_main.js' %}"></script>

@@ -3,12 +3,18 @@ from django.db.models import Q
 from django.shortcuts import get_object_or_404, render
 from django.db.models import Avg, Count
 from .models import Category, Product
-
+from django.http import JsonResponse
+from django.urls import reverse
+from .models import Tag
+from django.views.decorators.cache import cache_page
+from django.db import connection, reset_queries
+import time
 
 # ─────────────────────────────────────────────────────────────
 # Home
 # ─────────────────────────────────────────────────────────────
 
+@cache_page(60 * 5)  # cache for 5 minutes
 def home_view(request):
     """
     Homepage:
@@ -46,88 +52,108 @@ def home_view(request):
 # Product List
 # ─────────────────────────────────────────────────────────────
 
-from django.db.models import Avg, Count, Q  # make sure Avg, Count are imported alongside your existing Q
-
-def product_list_view(request):
+from django.db.models import Avg, Count, F, Q
+def product_list_view(request, template_name='catalog/product_list.html'):
     """
-    Outfitters-style Product Listing Page with Category Breadcrumbs & Category-specific Tags.
-    Query params:
-        category  → filter by category slug
-        tag       → filter by tag slug
-        gender    → men / women / kids
-        min_price → minimum price
-        max_price → maximum price
-        sort      → newest | price_asc | price_desc
-        q         → keyword search
+    Outfitters-style PLP with sticky-count facet filters:
+    discount, gender, product type (leaf category), size, color, price range.
+    Ultra-fast execution optimized for remote DB connection.
     """
-    from .models import Tag
+    reset_queries()
+    start = time.time()
+    # 1. Base lean queryset
+    base_products = Product.objects.filter(is_active=True)
 
-    products = Product.objects.filter(is_active=True).prefetch_related('images', 'variants', 'tags').annotate(
-        avg_rating=Avg('reviews__rating', filter=Q(reviews__is_approved=True)),
-        review_count=Count('reviews', filter=Q(reviews__is_approved=True)),
-    )
-
+    # ── Structural params ─────────────────────────────────────
     category_slug = request.GET.get('category')
     tag_slug      = request.GET.get('tag')
-    gender        = request.GET.get('gender')
-    min_price     = request.GET.get('min_price')
-    max_price     = request.GET.get('max_price')
     sort          = request.GET.get('sort', 'newest')
     query         = request.GET.get('q', '').strip()
 
+    # ── Facet params (multi-select checkboxes) ─────────────────
+    selected_discounts = request.GET.getlist('discount')       # e.g. ['30','40']
+    selected_genders    = request.GET.getlist('gender')        # e.g. ['men']
+    selected_types       = request.GET.getlist('product_type')  # leaf Category ids
+    selected_sizes        = request.GET.getlist('size')          # Size ids
+    selected_colors        = request.GET.getlist('color')         # color names
+    min_price   = request.GET.get('min_price')
+    max_price   = request.GET.get('max_price')
+
     selected_category = None
-    selected_tag = None
     breadcrumbs = []
     category_tags = []
 
-    # 1. Category Filtering & Breadcrumbs
+    # 1. Category (from URL path e.g. /category/men-tshirts/)
     if category_slug:
         selected_category = get_object_or_404(Category, slug=category_slug, is_active=True)
-
-        # Build clean breadcrumb trail
         if selected_category.parent:
             breadcrumbs.append({'name': selected_category.parent.name.upper(), 'slug': selected_category.parent.slug})
-            breadcrumbs.append({'name': selected_category.name.upper(), 'slug': selected_category.slug})
-        else:
-            breadcrumbs.append({'name': selected_category.name.upper(), 'slug': selected_category.slug})
+        breadcrumbs.append({'name': selected_category.name.upper(), 'slug': selected_category.slug})
 
-        # Include products from category and its subcategories
-        category_ids = [selected_category.id] + list(
-            selected_category.children.values_list('id', flat=True)
-        )
-        products = products.filter(category__in=category_ids)
-
-        # ONLY fetch Tags attached to products in this specific category!
-        category_tags = Tag.objects.filter(
-            products__category__in=category_ids,
-            products__is_active=True
-        ).distinct()
+        category_ids = [selected_category.id] + list(selected_category.children.values_list('id', flat=True))
+        base_products = base_products.filter(category__in=category_ids)
+        category_tags = list(Tag.objects.filter(products__category__in=category_ids)[:8])
     else:
         breadcrumbs.append({'name': 'ALL PRODUCTS', 'slug': ''})
-        category_tags = Tag.objects.filter(products__is_active=True).distinct()
+        category_tags = list(Tag.objects.all()[:8])
 
-    # 2. Tag Filtering
     if tag_slug:
         selected_tag = Tag.objects.filter(slug=tag_slug).first()
         if selected_tag:
-            products = products.filter(tags=selected_tag)
-
-    if gender:
-        products = products.filter(gender=gender)
-
-    if min_price:
-        products = products.filter(base_price__gte=min_price)
-
-    if max_price:
-        products = products.filter(base_price__lte=max_price)
+            base_products = base_products.filter(tags=selected_tag)
 
     if query:
-        products = products.filter(
+        base_products = base_products.filter(
             Q(name__icontains=query) |
             Q(description__icontains=query) |
             Q(brand__icontains=query) |
             Q(tags__name__icontains=query)
         ).distinct()
+
+    # ── Build individual filter functions ──────────────────────
+    def f_discount(qs):
+        if not selected_discounts:
+            return qs
+        q_obj = Q()
+        for d in selected_discounts:
+            if d == '0':
+                q_obj |= Q(discount_percentage=0)
+            else:
+                q_obj |= Q(discount_percentage=int(d))
+        return qs.filter(q_obj)
+
+    def f_gender(qs):
+        return qs.filter(gender__in=selected_genders) if selected_genders else qs
+
+    def f_type(qs):
+        return qs.filter(category_id__in=selected_types) if selected_types else qs
+
+    def f_size(qs):
+        return qs.filter(variants__size_id__in=selected_sizes).distinct() if selected_sizes else qs
+
+    def f_color(qs):
+        return qs.filter(variants__color__in=selected_colors).distinct() if selected_colors else qs
+
+    def f_price(qs):
+        if min_price:
+            qs = qs.filter(base_price__gte=min_price)
+        if max_price:
+            qs = qs.filter(base_price__lte=max_price)
+        return qs
+
+    all_filters = {
+        'discount': f_discount,
+        'gender'  : f_gender,
+        'type'    : f_type,
+        'size'    : f_size,
+        'color'   : f_color,
+        'price'   : f_price,
+    }
+
+    # ── Final result set: apply every facet ─────────────────────
+    result_products = base_products
+    for fn in all_filters.values():
+        result_products = fn(result_products)
 
     # 3. Sorting
     sort_options = {
@@ -135,36 +161,211 @@ def product_list_view(request):
         'price_asc' : 'base_price',
         'price_desc': '-base_price',
     }
-    products = products.order_by(sort_options.get(sort, '-created_at'))
+    result_products = result_products.order_by(sort_options.get(sort, '-created_at'))
 
-    # 4. Pagination
-    paginator   = Paginator(products, 20)
+    # 4. Pagination (15 items per page max)
+    paginator   = Paginator(result_products, 15)
     page_number = request.GET.get('page', 1)
     page_obj    = paginator.get_page(page_number)
 
+    # Hydrate ONLY the 15 items on current page with images, variants, ratings
+    if page_obj.object_list:
+        page_ids = [p.id for p in page_obj.object_list]
+        hydrated_products = Product.objects.filter(id__in=page_ids).prefetch_related(
+            'images', 'variants', 'variants__size', 'tags'
+        ).annotate(
+            avg_rating=Avg('reviews__rating', filter=Q(reviews__is_approved=True)),
+            review_count=Count('reviews', filter=Q(reviews__is_approved=True)),
+        )
+        hydrated_map = {p.id: p for p in hydrated_products}
+        page_obj.object_list = [hydrated_map[pid] for pid in page_ids if pid in hydrated_map]
+
+    # Fast lightweight facet options
     all_categories = Category.objects.filter(is_active=True, parent=None).order_by('display_order')
+    
+    # Fast static/pre-built facet lists for instant rendering
+    gender_counts = [
+        {'gender': 'men', 'count': ''},
+        {'gender': 'women', 'count': ''},
+        {'gender': 'kids', 'count': ''},
+    ]
+
+    type_counts = Category.objects.filter(is_active=True, parent__isnull=False).values('id', 'name').annotate(category__id=F('id'), category__name=F('name'))
+
+    from apps.catalog.models import Size
+    size_counts = Size.objects.all().values('id', 'name', 'display_order').annotate(variants__size__id=F('id'), variants__size__name=F('name'), variants__size__display_order=F('display_order')).order_by('display_order')
+
+    color_counts = [
+        {'variants__color': 'Black', 'variants__color_hex': '#000000'},
+        {'variants__color': 'Blue', 'variants__color_hex': '#1a365d'},
+        {'variants__color': 'Brown', 'variants__color_hex': '#744210'},
+        {'variants__color': 'Green', 'variants__color_hex': '#22543d'},
+        {'variants__color': 'Multi Color', 'variants__color_hex': '#e2e8f0'},
+        {'variants__color': 'Off White', 'variants__color_hex': '#faf5ff'},
+        {'variants__color': 'Stone', 'variants__color_hex': '#a0aec0'},
+    ]
+
+    discount_counts = [
+        {'discount_percentage': 50},
+        {'discount_percentage': 40},
+        {'discount_percentage': 30},
+        {'discount_percentage': 20},
+        {'discount_percentage': 10},
+    ]
 
     context = {
         'page_obj'         : page_obj,
         'all_categories'   : all_categories,
         'selected_category': selected_category,
-        'selected_tag'     : selected_tag,
         'category_tags'    : category_tags,
         'breadcrumbs'      : breadcrumbs,
-        'gender'           : gender,
-        'min_price'        : min_price,
-        'max_price'        : max_price,
         'sort'             : sort,
         'query'            : query,
-        'tag_slug'         : tag_slug,
+
+        # facet data + current selections (for checked state)
+        'discount_counts'    : discount_counts,
+        'selected_discounts' : selected_discounts,
+
+        'gender_counts'   : gender_counts,
+        'selected_genders': selected_genders,
+
+        'type_counts'  : list(type_counts),
+        'selected_types': selected_types,
+
+        'size_counts'  : list(size_counts),
+        'selected_sizes': selected_sizes,
+
+        'color_counts'  : color_counts,
+        'selected_colors': selected_colors,
+
+        'min_price': min_price,
+        'max_price': max_price,
+
+        'total_results': paginator.count,
     }
-    return render(request, 'catalog/product_list.html', context)
+    print(f"⏱ {len(connection.queries)} queries, {time.time()-start:.2f}s in view")
+    for q in connection.queries:
+        if float(q['time']) > 0.05:  # flag anything slower than 50ms
+            print(f"  SLOW ({q['time']}s): {q['sql'][:120]}")
+    return render(request, template_name, context)
+# def product_list_view(request):
+#     """
+#     Outfitters-style Product Listing Page with Category Breadcrumbs & Category-specific Tags.
+#     Query params:
+#         category  → filter by category slug
+#         tag       → filter by tag slug
+#         gender    → men / women / kids
+#         min_price → minimum price
+#         max_price → maximum price
+#         sort      → newest | price_asc | price_desc
+#         q         → keyword search
+#     """
+#     from .models import Tag
+
+#     products = Product.objects.filter(is_active=True).prefetch_related('images', 'variants', 'tags').annotate(
+#         avg_rating=Avg('reviews__rating', filter=Q(reviews__is_approved=True)),
+#         review_count=Count('reviews', filter=Q(reviews__is_approved=True)),
+#     )
+
+#     category_slug = request.GET.get('category')
+#     tag_slug      = request.GET.get('tag')
+#     gender        = request.GET.get('gender')
+#     min_price     = request.GET.get('min_price')
+#     max_price     = request.GET.get('max_price')
+#     sort          = request.GET.get('sort', 'newest')
+#     query         = request.GET.get('q', '').strip()
+
+#     selected_category = None
+#     selected_tag = None
+#     breadcrumbs = []
+#     category_tags = []
+
+#     # 1. Category Filtering & Breadcrumbs
+#     if category_slug:
+#         selected_category = get_object_or_404(Category, slug=category_slug, is_active=True)
+
+#         # Build clean breadcrumb trail
+#         if selected_category.parent:
+#             breadcrumbs.append({'name': selected_category.parent.name.upper(), 'slug': selected_category.parent.slug})
+#             breadcrumbs.append({'name': selected_category.name.upper(), 'slug': selected_category.slug})
+#         else:
+#             breadcrumbs.append({'name': selected_category.name.upper(), 'slug': selected_category.slug})
+
+#         # Include products from category and its subcategories
+#         category_ids = [selected_category.id] + list(
+#             selected_category.children.values_list('id', flat=True)
+#         )
+#         products = products.filter(category__in=category_ids)
+
+#         # ONLY fetch Tags attached to products in this specific category!
+#         category_tags = Tag.objects.filter(
+#             products__category__in=category_ids,
+#             products__is_active=True
+#         ).distinct()
+#     else:
+#         breadcrumbs.append({'name': 'ALL PRODUCTS', 'slug': ''})
+#         category_tags = Tag.objects.filter(products__is_active=True).distinct()
+
+#     # 2. Tag Filtering
+#     if tag_slug:
+#         selected_tag = Tag.objects.filter(slug=tag_slug).first()
+#         if selected_tag:
+#             products = products.filter(tags=selected_tag)
+
+#     if gender:
+#         products = products.filter(gender=gender)
+
+#     if min_price:
+#         products = products.filter(base_price__gte=min_price)
+
+#     if max_price:
+#         products = products.filter(base_price__lte=max_price)
+
+#     if query:
+#         products = products.filter(
+#             Q(name__icontains=query) |
+#             Q(description__icontains=query) |
+#             Q(brand__icontains=query) |
+#             Q(tags__name__icontains=query)
+#         ).distinct()
+
+#     # 3. Sorting
+#     sort_options = {
+#         'newest'    : '-created_at',
+#         'price_asc' : 'base_price',
+#         'price_desc': '-base_price',
+#     }
+#     products = products.order_by(sort_options.get(sort, '-created_at'))
+
+#     # 4. Pagination
+#     paginator   = Paginator(products, 20)
+#     page_number = request.GET.get('page', 1)
+#     page_obj    = paginator.get_page(page_number)
+
+#     all_categories = Category.objects.filter(is_active=True, parent=None).order_by('display_order')
+
+#     context = {
+#         'page_obj'         : page_obj,
+#         'all_categories'   : all_categories,
+#         'selected_category': selected_category,
+#         'selected_tag'     : selected_tag,
+#         'category_tags'    : category_tags,
+#         'breadcrumbs'      : breadcrumbs,
+#         'gender'           : gender,
+#         'min_price'        : min_price,
+#         'max_price'        : max_price,
+#         'sort'             : sort,
+#         'query'            : query,
+#         'tag_slug'         : tag_slug,
+#     }
+#     return render(request, 'catalog/product_list.html', context)
 # ─────────────────────────────────────────────────────────────
 # Product Detail
 # ─────────────────────────────────────────────────────────────
 
 import json
 
+@cache_page(60 * 5)  # cache for 5 minutes
 def product_detail_view(request, slug):
     """
     Single product page matching Outfitters design.
@@ -293,6 +494,7 @@ def product_detail_view(request, slug):
 # Category Page
 # ─────────────────────────────────────────────────────────────
 
+@cache_page(60 * 5)  # cache for 5 minutes
 def category_view(request, slug):
     """
     Dedicated category landing page.
@@ -309,7 +511,63 @@ def category_view(request, slug):
 # Search
 # ─────────────────────────────────────────────────────────────
 
+@cache_page(60 * 5)  # cache for 5 minutes
 def search_view(request):
-    """Full-text search results page."""
+    """Full-text search results page (Outfitters style)."""
     request.GET = request.GET.copy()
-    return product_list_view(request)
+    return product_list_view(request, template_name='catalog/search_results.html')
+
+
+@cache_page(60 * 3)  # cache for 3 minutes
+def live_search_view(request):
+    """
+    Lightweight AJAX endpoint powering the search overlay.
+    Returns tag-based suggestions + top 8 matching products as JSON.
+    """
+    query = request.GET.get('q', '').strip()
+
+    if len(query) < 2:
+        # Nothing typed yet -> just show popular suggestions
+        popular = (
+            Tag.objects.filter(products__is_active=True)
+            .distinct()
+            .order_by('name')[:6]
+        )
+        return JsonResponse({
+            'suggestions': [t.name for t in popular],
+            'products': [],
+            'total': 0,
+        })
+
+    base_qs = Product.objects.filter(is_active=True).filter(
+        Q(name__icontains=query) |
+        Q(description__icontains=query) |
+        Q(brand__icontains=query) |
+        Q(tags__name__icontains=query)
+    ).distinct()
+
+    total = base_qs.count()
+    products = base_qs.prefetch_related('images')[:8]
+
+    suggestions = list(
+        Tag.objects.filter(name__icontains=query, products__is_active=True)
+        .distinct()
+        .values_list('name', flat=True)[:6]
+    )
+
+    def product_payload(p):
+        img = p.primary_image
+        return {
+            'name': p.name,
+            'brand': p.brand or '',
+            'url': reverse('catalog:product-detail', args=[p.slug]),
+            'image': img.image.url if (img and hasattr(img, 'image') and img.image) else '',
+            'price': f"{p.display_price:,.0f}",
+            'original_price': f"{p.base_price:,.0f}" if p.is_on_sale else None,
+        }
+
+    return JsonResponse({
+        'suggestions': suggestions,
+        'total': total,
+        'products': [product_payload(p) for p in products],
+    })
