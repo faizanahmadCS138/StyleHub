@@ -333,10 +333,12 @@ class ProductVariant(models.Model):
     def variant_image(self):
         """Returns the primary image matching this variant's color, or fallback to product primary image."""
         if self.color:
-            color_name = self.color.strip()
-            matching_img = (
-                self.product.images.filter(color__iexact=color_name, is_primary=True).first()
-                or self.product.images.filter(color__iexact=color_name).first()
+            color_name = self.color.strip().lower()
+            images = list(self.product.images.all())   # uses prefetch cache now
+            matching_img = next(
+                (img for img in images if img.color and img.color.strip().lower() == color_name and img.is_primary), None
+            ) or next(
+                (img for img in images if img.color and img.color.strip().lower() == color_name), None
             )
             if matching_img and matching_img.image:
                 return matching_img

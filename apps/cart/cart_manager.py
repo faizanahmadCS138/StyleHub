@@ -132,60 +132,38 @@ class StyleHubCartManager:
 
     def get_items(self):
         """Returns a standardized list of cart items."""
-
         items = []
-
         cart_items = (
             CartItem.objects
             .filter(cart=self.cart)
-            .select_related(
-            'variant__product',
-            'variant__size'
-            )
+            .select_related('variant__product', 'variant__size')
+            .prefetch_related('variant__product__images')
         )
-
         for item in cart_items:
-
             variant = item.variant
             product = variant.product
             variant_img = variant.variant_image
-
             items.append({
                 'id': item.id,
                 'variant_id': variant.id,
                 'product_slug': product.slug,
-                'product_url': reverse(
-                    'catalog:product-detail',
-                    kwargs={'slug': product.slug}
-                ) + (f"?color={variant.color.strip()}" if variant.color else ""),
+                'product_url': reverse('catalog:product-detail', kwargs={'slug': product.slug}) + (f"?color={variant.color.strip()}" if variant.color else ""),
                 'product_name': product.name,
-                'size': (
-                    variant.size.name
-                    if variant.size
-                    else ''
-                ),
+                'size': variant.size.name if variant.size else '',
                 'color': variant.color,
                 'price': float(item.unit_price),
                 'quantity': item.quantity,
                 'subtotal': float(item.subtotal),
-                'image': (
-                    variant_img.image.url
-                    if (variant_img and variant_img.image)
-                    else '/static/images/placeholder.jpg'
-                ),
+                'image': variant_img.image.url if (variant_img and variant_img.image) else '/static/images/placeholder.jpg',
             })
+        return items
 
-        return items    
-
-    def get_summary(self):
-        """Returns total item count and order subtotal."""
-        items = self.get_items()
+    def get_summary(self, items=None):
+        """Returns total item count and order subtotal. Pass items= to avoid re-querying."""
+        items = items if items is not None else self.get_items()
         total_qty = sum(item['quantity'] for item in items)
         subtotal = sum(item['subtotal'] for item in items)
-        return {
-            'total_items': total_qty,
-            'subtotal': subtotal,
-        }
+        return {'total_items': total_qty, 'subtotal': subtotal}
 
     def clear(self):
         CartItem.objects.filter(

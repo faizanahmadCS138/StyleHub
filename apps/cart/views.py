@@ -23,14 +23,15 @@ class CartAPIView(APIView):
 
     def get(self, request):
         cart_mgr = StyleHubCartManager(request)
+        items = cart_mgr.get_items()
         return Response({
             'ok': True,
-            'items': cart_mgr.get_items(),
-            'summary': cart_mgr.get_summary()
+            'items': items,
+            'summary': cart_mgr.get_summary(items=items)
         }, status=status.HTTP_200_OK)
 
     def post(self, request):
-        
+        cart_mgr = StyleHubCartManager(request)
         variant_id = request.data.get('variant_id')
         quantity = int(request.data.get('quantity', 1))
         override_quantity = request.data.get('override_quantity', False)
@@ -39,28 +40,28 @@ class CartAPIView(APIView):
             return Response({'error': 'variant_id is required.'}, status=status.HTTP_400_BAD_REQUEST)
         print("Session auth keys:", dict(request.session.items()))
         print("get_user(request):", get_user(request))
-        cart_mgr = StyleHubCartManager(request)
         cart_mgr.add(variant_id=variant_id, quantity=quantity, override_quantity=override_quantity)
-
+        items = cart_mgr.get_items()
         return Response({
             'ok': True,
             'message': 'Cart updated successfully.',
-            'items': cart_mgr.get_items(),
-            'summary': cart_mgr.get_summary()
+            'items': items,
+            'summary': cart_mgr.get_summary(items=items)
         }, status=status.HTTP_200_OK)
 
     def delete(self, request):
+        cart_mgr = StyleHubCartManager(request)
         variant_id = request.data.get('variant_id')
         if not variant_id:
             return Response({'error': 'variant_id is required.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        cart_mgr = StyleHubCartManager(request)
+        
         cart_mgr.remove(variant_id=variant_id)
-
+        items = cart_mgr.get_items()
         return Response({
             'message': 'Item removed from cart.',
-            'items': cart_mgr.get_items(),
-            'summary': cart_mgr.get_summary()
+            'items': items,
+            'summary': cart_mgr.get_summary(items=items)
         }, status=status.HTTP_200_OK)
 
 
