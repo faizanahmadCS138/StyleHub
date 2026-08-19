@@ -11,7 +11,7 @@ ProductVariant  — size × color combinations with individual stock
 from decimal import Decimal
 from django.db import models
 from django.utils.text import slugify
-
+from django.utils.functional import cached_property
 from apps.core.models import TimeStampedModel
 from django.contrib.postgres.indexes import GinIndex
 
@@ -155,41 +155,85 @@ class Product(TimeStampedModel):
         """Returns sale_price if on sale, otherwise base_price."""
         return self.sale_price if self.is_on_sale and self.sale_price else self.base_price
 
-    @property
-    def primary_image(self):
-        """Returns the primary image or the first available image."""
-        img = self.images.filter(is_primary=True).first()
-        return img or self.images.first()
+    # @property
+    # def primary_image(self):
+    #     """Returns the primary image or the first available image."""
+    #     img = self.images.filter(is_primary=True).first()
+    #     return img or self.images.first()
 
-    @property
+    # @property
+    # def secondary_image(self):
+    #     """Returns the second image for hover effect or color variant."""
+    #     imgs = self.images.all()
+    #     if len(imgs) > 1:
+    #         return imgs[1]
+    #     return self.primary_image
+
+    # @property
+    # def color_swatches(self):
+    #     """Returns list of distinct color dicts with name, hex code & associated primary image URL."""
+    #     swatches = []
+    #     seen = set()
+    #     for variant in self.variants.filter(is_active=True):
+    #         color_name = variant.color.strip() if variant.color else ''
+    #         if color_name and color_name.lower() not in seen:
+    #             seen.add(color_name.lower())
+    #             matching_img = (
+    #                 self.images.filter(color__iexact=color_name, is_primary=True).first()
+    #                 or self.images.filter(color__iexact=color_name).first()
+    #             )
+    #             img_url = matching_img.image.url if (matching_img and matching_img.image) else (self.primary_image.image.url if (self.primary_image and self.primary_image.image) else '')
+    #             swatches.append({
+    #                 'color': color_name,
+    #                 'color_hex': variant.color_hex or '#222222',
+    #                 'image_url': img_url,
+    #             })
+    #     return swatches
+    @cached_property
+    def primary_image(self):
+        """Returns the primary image or the first available image (uses prefetch cache)."""
+        imgs = list(self.images.all())   # .all() with NOTHING chained = uses prefetch cache
+        for img in imgs:
+            if img.is_primary:
+                return img
+        return imgs[0] if imgs else None
+    
+    @cached_property
     def secondary_image(self):
         """Returns the second image for hover effect or color variant."""
-        imgs = self.images.all()
+        imgs = list(self.images.all())
         if len(imgs) > 1:
             return imgs[1]
         return self.primary_image
 
-    @property
+    @cached_property
     def color_swatches(self):
-        """Returns list of distinct color dicts with name, hex code & associated primary image URL."""
+        """Returns list of distinct color dicts. Built from already-fetched images/variants — zero extra queries."""
+        images = list(self.images.all())
+        variants = [v for v in self.variants.all() if v.is_active]
+
         swatches = []
         seen = set()
-        for variant in self.variants.filter(is_active=True):
+        for variant in variants:
             color_name = variant.color.strip() if variant.color else ''
-            if color_name and color_name.lower() not in seen:
-                seen.add(color_name.lower())
-                matching_img = (
-                    self.images.filter(color__iexact=color_name, is_primary=True).first()
-                    or self.images.filter(color__iexact=color_name).first()
+            key = color_name.lower()
+            if color_name and key not in seen:
+                seen.add(key)
+                matching_img = next(
+                    (img for img in images if img.color and img.color.strip().lower() == key and img.is_primary),
+                    None
+                ) or next(
+                    (img for img in images if img.color and img.color.strip().lower() == key),
+                    None
                 )
-                img_url = matching_img.image.url if (matching_img and matching_img.image) else (self.primary_image.image.url if (self.primary_image and self.primary_image.image) else '')
+                fallback = matching_img or self.primary_image
+                img_url = fallback.image.url if (fallback and fallback.image) else ''
                 swatches.append({
                     'color': color_name,
                     'color_hex': variant.color_hex or '#222222',
                     'image_url': img_url,
                 })
         return swatches
-
     @property
     def is_in_stock(self):
         """True if at least one variant has stock > 0."""

@@ -141,6 +141,7 @@ DATABASES = {
 
 if 'localhost' not in DATABASES['default']['HOST'] and '127.0.0.1' not in DATABASES['default']['HOST']:
     DATABASES['default']['OPTIONS'] = {'sslmode': 'require'}
+    DATABASES['default']['DISABLE_SERVER_SIDE_CURSORS'] = True
 
 # ──────────────────────────────────────────────────────────────────────────────
 # CACHING — In-memory cache to avoid repeated slow remote DB queries

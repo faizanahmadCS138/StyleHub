@@ -9,7 +9,8 @@ from .models import Tag
 from django.views.decorators.cache import cache_page
 from django.db import connection, reset_queries
 import time
-
+from django.db.models import Prefetch
+from .models import ProductImage, ProductVariant
 # ─────────────────────────────────────────────────────────────
 # Home
 # ─────────────────────────────────────────────────────────────
@@ -365,14 +366,18 @@ def product_list_view(request, template_name='catalog/product_list.html'):
 
 import json
 
-@cache_page(60 * 5)  # cache for 5 minutes
+@cache_page(60 * 5)
 def product_detail_view(request, slug):
     """
     Single product page matching Outfitters design.
     Provides breadcrumbs, image gallery, ordered sizes, colors, and variant JSON for live stock lookup.
     """
     product = get_object_or_404(
-        Product.objects.prefetch_related('images', 'variants__size', 'tags', 'category__parent'),
+        Product.objects.select_related('category__parent').prefetch_related(
+            Prefetch('images', queryset=ProductImage.objects.order_by('display_order')),
+            Prefetch('variants', queryset=ProductVariant.objects.filter(is_active=True).select_related('size')),
+            'tags',
+        ),
         slug=slug,
         is_active=True,
     )
@@ -392,13 +397,11 @@ def product_detail_view(request, slug):
             breadcrumbs.append({'name': product.category.parent.name.upper(), 'slug': product.category.parent.slug})
         breadcrumbs.append({'name': product.category.name.upper(), 'slug': product.category.slug})
 
-    # 2. Images gallery
-    images = list(product.images.all().order_by('display_order'))
-    primary_image = product.primary_image
+    # 2. Images & variants — plain .all(), uses the Prefetch cache, zero extra queries
+    all_images = list(product.images.all())
+    variants = list(product.variants.all())
 
-    # 3. Variants & Sizes (sorted by display_order)
-    variants = product.variants.filter(is_active=True).select_related('size')
-
+    # 3. Sizes
     sizes_map = {}
     for v in variants:
         if v.size and v.size.name not in sizes_map:
@@ -413,14 +416,18 @@ def product_detail_view(request, slug):
 
     sorted_sizes = sorted(sizes_map.values(), key=lambda s: s['display_order'])
 
-    # 4. Colors
+    # 4. Colors — built from all_images in Python, no DB hits
     colors_map = {}
     for v in variants:
         if v.color and v.color.strip() not in colors_map:
             color_name = v.color.strip()
-            matching_img = (
-                product.images.filter(color__iexact=color_name, is_primary=True).first()
-                or product.images.filter(color__iexact=color_name).first()
+            key = color_name.lower()
+            matching_img = next(
+                (img for img in all_images if img.color and img.color.strip().lower() == key and img.is_primary),
+                None
+            ) or next(
+                (img for img in all_images if img.color and img.color.strip().lower() == key),
+                None
             )
             img_url = matching_img.image.url if (matching_img and matching_img.image) else ''
             colors_map[color_name] = {
@@ -432,7 +439,6 @@ def product_detail_view(request, slug):
     colors_list = list(colors_map.values())
     requested_color = request.GET.get('color', '').strip()
 
-    # If requested color exists in product colors, re-order colors_list so requested_color is first
     selected_color = None
     if requested_color:
         for idx, c in enumerate(colors_list):
@@ -444,8 +450,7 @@ def product_detail_view(request, slug):
     if not selected_color and colors_list:
         selected_color = colors_list[0]['name']
 
-    # 2. Images gallery - order so selected_color images appear first
-    all_images = list(product.images.all().order_by('display_order'))
+    # 5. Reorder images so selected_color images appear first (still in-memory, no DB hit)
     if selected_color:
         color_imgs = [img for img in all_images if img.color and img.color.strip().lower() == selected_color.lower()]
         other_imgs = [img for img in all_images if img not in color_imgs]
@@ -455,13 +460,13 @@ def product_detail_view(request, slug):
 
     primary_image = images[0] if images else product.primary_image
 
-    # 5. Related products
+    # 6. Related products
     related_products = Product.objects.filter(
         category=product.category,
         is_active=True,
     ).exclude(pk=product.pk).prefetch_related('images')[:4]
 
-    # 6. JSON Data for interactive JS variant selection & stock checking
+    # 7. JSON for JS variant selection
     variants_data = [
         {
             'id': v.id,
@@ -483,7 +488,6 @@ def product_detail_view(request, slug):
         'selected_color'  : selected_color,
         'related_products': related_products,
         'variants_json'   : json.dumps(variants_data),
-        # Reviews
         'reviews'          : reviews,
         'avg_rating'       : review_stats['avg_rating'] or 5,
         'review_count'     : review_stats['review_count'],
