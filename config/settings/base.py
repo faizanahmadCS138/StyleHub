@@ -311,5 +311,5 @@ STRIPE_WEBHOOK_SECRET = config("STRIPE_WEBHOOK_SECRET", default="")
 
 SITE_URL = config(
     'SITE_URL',
-    default='https://stylehub-6b0r.onrender.com'
+    default='https://stylehu.me'
 )
